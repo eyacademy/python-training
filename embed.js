@@ -49,20 +49,39 @@
     go(a.getAttribute("data-file") || FIRST);
   });
 
-  // Нижний край фиксированной шапки Tilda, как в ai-guide.
-  function headBottom() {
-    var head = 0, menus = document.querySelectorAll(".t228, .t-menu__fixed, [class*='positionfixed']");
+  // Фиксированная шапка Tilda: её нижний край и элемент, как в ai-guide.
+  function tildaHead() {
+    var head = 0, el = null, menus = document.querySelectorAll(".t228, .t-menu__fixed, [class*='positionfixed']");
     for (var k = 0; k < menus.length; k++) {
       var r = menus[k].getBoundingClientRect();
-      if (r.top <= 0 && r.bottom > head && r.height < 200 && r.bottom < window.innerHeight / 2) head = r.bottom;
+      if (r.top <= 0 && r.bottom > head && r.height < 200 && r.bottom < window.innerHeight / 2) { head = r.bottom; el = menus[k]; }
     }
-    return Math.max(0, Math.round(head));
+    return { bottom: Math.max(0, Math.round(head)), el: el };
   }
-  var padded = false;
+
+  // Края содержимого шапки Tilda: левый край логотипа и правый край последнего пункта (RU).
+  // Наша строка с темами встаёт по тем же краям.
+  function edges(el) {
+    if (!el) return null;
+    var left = Infinity, right = 0, w = window.innerWidth, items = el.querySelectorAll("img, a, button");
+    for (var k = 0; k < items.length; k++) {
+      var r = items[k].getBoundingClientRect();
+      if (!r.width || !r.height || r.left < 0 || r.right > w) continue;
+      left = Math.min(left, r.left);
+      right = Math.max(right, r.right);
+    }
+    if (!(left < right) || left > w / 3 || w - right > w / 3) return null;
+    return { left: Math.round(left), right: Math.round(w - right) };
+  }
+
+  var inner = root.querySelector(".eyp-in"), padded = false;
   function layout() {
-    var h = headBottom();
+    var t = tildaHead(), h = t.bottom, e = edges(t.el);
     root.style.setProperty("--eyp-head", h + "px");
     if (!padded || h > parseInt(root.style.paddingTop || "0", 10)) { root.style.paddingTop = h + "px"; padded = true; }
+    inner.style.maxWidth = e ? "none" : "";
+    inner.style.paddingLeft = e ? e.left + "px" : "";
+    inner.style.paddingRight = e ? e.right + "px" : "";
   }
   layout();
   window.addEventListener("load", layout);

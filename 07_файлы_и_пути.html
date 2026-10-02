@@ -107,8 +107,8 @@
         <div class="panel stack">
           <div class="panel-title" style="margin:0">Где запущен терминал</div>
           <div class="cwd-pick" id="cwdPick">
-            <button class="chip-btn is-on" data-cwd="ey_python">ey_python</button>
-            <button class="chip-btn" data-cwd="ey_python/data">ey_python/data</button>
+            <button class="chip-btn is-on" data-cwd="python_analiz">python_analiz</button>
+            <button class="chip-btn" data-cwd="python_analiz/data">python_analiz/data</button>
             <button class="chip-btn" data-cwd="~">домашняя папка</button>
           </div>
         </div>
@@ -203,7 +203,7 @@ df.to_excel(Path("результаты") / "отчёт.xlsx")</pre></div>
       <h2>Попросите переделать пути под проект</h2>
     </div>
 <pre class="prompt-box" id="prompt7">Перепиши все пути в этом скрипте через pathlib.Path.
-Структура проекта: папка ey_python, в ней otchet.py, папка data (входные файлы) и папка результаты (выход).
+Структура проекта: папка python_analiz, в ней otchet.py, папка data (входные файлы) и папка результаты (выход).
 Пути должны работать на Windows и macOS, считаться от папки, где лежит скрипт (Path(__file__).parent).
 Если папки результаты нет, создай её. Если входного файла нет, выведи понятное сообщение на русском.
 Абсолютные пути вида C:\... убери.
@@ -273,18 +273,18 @@ df.to_excel(Path("результаты") / "отчёт.xlsx")</pre></div>
 
   /* ---------- дерево ---------- */
   var TREE = [
-    { p: "ey_python", d: 0, dir: true },
-    { p: "ey_python/otchet.py", d: 1, script: true },
-    { p: "ey_python/data", d: 1, dir: true },
-    { p: "ey_python/data/добыча_2026.xlsx", d: 2 },
-    { p: "ey_python/data/добыча_2026_обновление.xlsx", d: 2 },
-    { p: "ey_python/data/скважины.csv", d: 2 },
-    { p: "ey_python/data/план_2026.json", d: 2 },
-    { p: "ey_python/результаты", d: 1, dir: true },
-    { p: "ey_python/результаты/отчёт_добыча_2026.xlsx", d: 2 },
-    { p: "ey_python/результаты/график_добыча.png", d: 2 }
+    { p: "python_analiz", d: 0, dir: true },
+    { p: "python_analiz/otchet.py", d: 1, script: true },
+    { p: "python_analiz/data", d: 1, dir: true },
+    { p: "python_analiz/data/добыча_2026.xlsx", d: 2 },
+    { p: "python_analiz/data/добыча_2026_обновление.xlsx", d: 2 },
+    { p: "python_analiz/data/скважины.csv", d: 2 },
+    { p: "python_analiz/data/план_2026.json", d: 2 },
+    { p: "python_analiz/результаты", d: 1, dir: true },
+    { p: "python_analiz/результаты/отчёт_добыча_2026.xlsx", d: 2 },
+    { p: "python_analiz/результаты/график_добыча.png", d: 2 }
   ];
-  var selPath = "ey_python/data/добыча_2026.xlsx", cwd = "ey_python";
+  var selPath = "python_analiz/data/добыча_2026.xlsx", cwd = "python_analiz";
   var tree = $("tree");
   function base(p) { return p.split("/").pop(); }
   function renderTree() {
@@ -295,7 +295,7 @@ df.to_excel(Path("результаты") / "отчёт.xlsx")</pre></div>
     }).join("");
     tree.querySelectorAll(".node").forEach(function (b) { b.addEventListener("click", function () { selPath = b.getAttribute("data-p"); update(); }); });
   }
-  function relFromProject(p) { return p.replace(/^ey_python\/?/, ""); }
+  function relFromProject(p) { return p.replace(/^python_analiz\/?/, ""); }
   function pathlibExpr(rel) {
     if (!rel) return 'Path(".")';
     var parts = rel.split("/");
@@ -309,7 +309,7 @@ df.to_excel(Path("результаты") / "отчёт.xlsx")</pre></div>
     if (/\.csv$/.test(p)) return 'wells = pd.read_csv(' + ex + ', sep=";", encoding="utf-8-sig")';
     if (/\.json$/.test(p)) return 'plan = pd.read_json(' + ex + ')';
     if (/\.png$/.test(p)) return 'plt.savefig(' + ex + ', dpi=150)   # запись графика';
-    if (/\.py$/.test(p)) return '# это сам скрипт. Надёжная точка отсчёта:\nBASE = Path(__file__).parent        # папка ey_python';
+    if (/\.py$/.test(p)) return '# это сам скрипт. Надёжная точка отсчёта:\nBASE = Path(__file__).parent        # папка python_analiz';
     return 'folder = ' + ex + '\nfolder.mkdir(exist_ok=True)';
   }
   function update() {
@@ -333,7 +333,7 @@ df.to_excel(Path("результаты") / "отчёт.xlsx")</pre></div>
     var r = $("resolveOut");
     if (!rel) { r.className = "resolve note"; r.innerHTML = "Это папка проекта. Здесь должен быть открыт терминал и VS Code."; }
     else if (exists) { r.className = "resolve ok-box"; r.innerHTML = "Терминал открыт в <code>" + EY.esc(cwdAbsWin) + "</code>. Python ищет <code>" + EY.esc(cwdAbsWin + "\\" + rel.replace(/\//g, "\\")) + "</code>. <b>Файл найден.</b>"; }
-    else { r.className = "resolve err-box"; r.innerHTML = "Терминал открыт в <code>" + EY.esc(cwdAbsWin) + "</code>. Python ищет <code>" + EY.esc(cwdAbsWin + "\\" + rel.replace(/\//g, "\\")) + "</code>. Такого нет.<br><span class='err-line'>FileNotFoundError: [Errno 2] No such file or directory: '" + EY.esc(rel.replace(/\//g, "\\\\")) + "'</span><br>Решение: перейдите в терминале в папку ey_python (<code>" + (cwd === "~" ? "cd ey_python" : "cd ..") + "</code>) или считайте путь от скрипта через <code>Path(__file__).parent</code>."; }
+    else { r.className = "resolve err-box"; r.innerHTML = "Терминал открыт в <code>" + EY.esc(cwdAbsWin) + "</code>. Python ищет <code>" + EY.esc(cwdAbsWin + "\\" + rel.replace(/\//g, "\\")) + "</code>. Такого нет.<br><span class='err-line'>FileNotFoundError: [Errno 2] No such file or directory: '" + EY.esc(rel.replace(/\//g, "\\\\")) + "'</span><br>Решение: перейдите в терминале в папку python_analiz (<code>" + (cwd === "~" ? "cd python_analiz" : "cd ..") + "</code>) или считайте путь от скрипта через <code>Path(__file__).parent</code>."; }
   }
   document.querySelectorAll("[data-cwd]").forEach(function (b) {
     b.addEventListener("click", function () {

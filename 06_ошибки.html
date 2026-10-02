@@ -184,8 +184,8 @@ Traceback:
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
-  var U = 'C:\\Users\\aigerim\\ey_python\\otchet.py';
-  var L = 'C:\\Users\\aigerim\\miniconda3\\envs\\ey\\Lib\\site-packages\\pandas';
+  var U = 'C:\\Users\\aigerim\\python_analiz\\otchet.py';
+  var L = 'C:\\Users\\aigerim\\miniconda3\\envs\\analiz\\Lib\\site-packages\\pandas';
   /* роли строк: w = где (File с вашим файлом), c = код, k = подчёркивание, x = что, l = библиотека */
   var ERRORS = [
     { name: "SyntaxError", sub: "пропущена запятая",
@@ -221,8 +221,8 @@ Traceback:
     { name: "ModuleNotFoundError", sub: "библиотека не установлена",
       tb: [["Traceback (most recent call last):", ""], ["  File \"" + U + "\", line 1, in <module>", "w"], ["    import pandas as pd", "c"], ["ModuleNotFoundError: No module named 'pandas'", "x"]],
       what: "В текущем окружении Python нет библиотеки pandas. Код правильный, не хватает ящика с инструментами.",
-      why: "Библиотеку не установили или VS Code запускает другой Python, не окружение ey. Внизу окна VS Code посмотрите, какой интерпретатор выбран.",
-      bad: "import pandas as pd", good: "# в терминале, в нужном окружении:\n# conda activate ey\n# conda install pandas\nimport pandas as pd" }
+      why: "Библиотеку не установили или VS Code запускает другой Python, не окружение analiz. Внизу окна VS Code посмотрите, какой интерпретатор выбран.",
+      bad: "import pandas as pd", good: "# в терминале, в нужном окружении:\n# conda activate analiz\n# conda install pandas\nimport pandas as pd" }
   ];
 
   var cur = 0, tb = $("tb");

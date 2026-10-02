@@ -131,7 +131,7 @@
     </div>
     <div class="split">
       <div class="steps">
-        <div class="step"><div><b>Проверьте, какое окружение активно.</b><br><span class="muted">В терминале слева в скобках имя: <code>(ey)</code>. В VS Code внизу справа версия Python, щелчок по ней или команда «Python: Select Interpreter».</span></div></div>
+        <div class="step"><div><b>Проверьте, какое окружение активно.</b><br><span class="muted">В терминале слева в скобках имя: <code>(analiz)</code>. В VS Code внизу справа версия Python, щелчок по ней или команда «Python: Select Interpreter».</span></div></div>
         <div class="step"><div><b>Проверьте пакет одной командой.</b><br><code>python -c "import openpyxl; print(openpyxl.__version__)"</code></div></div>
         <div class="step"><div><b>Установите в это окружение.</b><br><code>conda install -c conda-forge openpyxl</code> или <code>pip install openpyxl</code></div></div>
         <div class="step"><div><b>Перезапустите.</b><br><span class="muted">В Jupyter: Restart kernel. В терминале запустите скрипт заново.</span></div></div>
@@ -168,12 +168,12 @@ from pathlib import Path           # pathlib уже есть в Python, став
 SyntaxError: invalid syntax</pre></div>
       <div><div class="good-label">Так работает</div>
 <pre data-hl="plain"># в терминале, не в Python:
-(ey) C:\Users\aigerim\ey_python&gt; conda install pandas
+(analiz) C:\Users\aigerim\python_analiz&gt; conda install pandas
 
 # в ячейке Jupyter:
 %pip install pandas</pre></div>
     </div>
-    <p>Команды установки пишут в терминал, а не в интерпретатор Python с приглашением <code>&gt;&gt;&gt;</code>. Вторая частая беда: пакет поставили в base, а VS Code запускает окружение ey. Смотрите на имя в скобках перед приглашением.</p>
+    <p>Команды установки пишут в терминал, а не в интерпретатор Python с приглашением <code>&gt;&gt;&gt;</code>. Вторая частая беда: пакет поставили в base, а VS Code запускает окружение analiz. Смотрите на имя в скобках перед приглашением.</p>
   </section>
 
   <section class="block ask">
@@ -183,7 +183,7 @@ SyntaxError: invalid syntax</pre></div>
     </div>
 <pre class="prompt-box" id="prompt8">Посмотри на этот скрипт и составь список библиотек, которые нужно установить.
 Для каждой укажи: имя для import, имя для установки, зачем она здесь.
-Дай три варианта установки: conda (канал conda-forge, окружение ey, Python 3.14), pip и uv add.
+Дай три варианта установки: conda (канал conda-forge, окружение analiz, Python 3.14), pip и uv add.
 Отдельно отметь модули, которые уже встроены в Python и не требуют установки.
 Мои условия: Windows, корпоративный ноутбук, Miniconda с каналом conda-forge.
 
@@ -200,7 +200,7 @@ SyntaxError: invalid syntax</pre></div>
   var $ = function (id) { return document.getElementById(id); };
   var ENVS = {
     base: { py: "3.14", desc: "Создаётся при установке Miniconda. Сюда ничего не ставим.", pkgs: { pip: "25.2", conda: "25.7" } },
-    ey: { py: "3.14", desc: "Рабочее окружение. Всё для отчёта по добыче.", pkgs: { pandas: "3.0.6", numpy: "2.5.3", matplotlib: "3.11.2", openpyxl: "3.1.5", jupyter: "1.1.1" } },
+    analiz: { py: "3.14", desc: "Рабочее окружение. Всё для отчёта по добыче.", pkgs: { pandas: "3.0.6", numpy: "2.5.3", matplotlib: "3.11.2", openpyxl: "3.1.5", jupyter: "1.1.1" } },
     old_report: { py: "3.11", desc: "Старый отчёт коллеги. Работает только с pandas 2.", pkgs: { pandas: "2.2.3", numpy: "1.26.4", requests: "2.32.3" } }
   };
   var AVAILABLE = { seaborn: "0.13.2", openpyxl: "3.1.5", pandas: "3.0.6", numpy: "2.5.3", matplotlib: "3.11.2", requests: "2.32.5", jupyter: "1.1.1", ruff: "0.16.8", "scikit-learn": "1.8.0", pyyaml: "6.0.3" };
@@ -210,8 +210,8 @@ SyntaxError: invalid syntax</pre></div>
   var termBody = $("termBody"), termInput = $("termInput");
 
   function prompt() {
-    if (os === "win") return "(" + active + ") C:\\Users\\aigerim\\ey_python>";
-    return "(" + active + ") aigerim@MacBook ey_python %";
+    if (os === "win") return "(" + active + ") C:\\Users\\aigerim\\python_analiz>";
+    return "(" + active + ") aigerim@MacBook python_analiz %";
   }
   function renderEnvs() {
     $("envCards").innerHTML = Object.keys(ENVS).map(function (name) {
@@ -289,7 +289,7 @@ SyntaxError: invalid syntax</pre></div>
       var en = ENVS[active];
       if (/^uv run/.test(cmd)) { print('<span class="mu">Using CPython 3.14.6\nCreating virtual environment at: .venv\nInstalled 12 packages in 140ms</span>\n<span class="ok">Строк: 1837\nОтчёт сохранён: результаты\\отчёт_добыча_2026.xlsx</span>'); note("<code>uv run</code> сам создал окружение .venv по файлу pyproject.toml и запустил скрипт."); return; }
       var need = ["pandas", "openpyxl"].filter(function (p) { return !en.pkgs[p]; });
-      if (need.length) { print('<span class="er">Traceback (most recent call last):\n  File "' + (os === "win" ? "C:\\Users\\aigerim\\ey_python\\otchet.py" : "/Users/aigerim/ey_python/otchet.py") + '", line 7, in &lt;module&gt;\n    import ' + need[0] + "\nModuleNotFoundError: No module named '" + need[0] + "'</span>"); note("Скрипту нужен " + need[0] + ", а в <b>" + active + "</b> его нет. Активируйте ey: <code>conda activate ey</code>."); return; }
+      if (need.length) { print('<span class="er">Traceback (most recent call last):\n  File "' + (os === "win" ? "C:\\Users\\aigerim\\python_analiz\\otchet.py" : "/Users/aigerim/python_analiz/otchet.py") + '", line 7, in &lt;module&gt;\n    import ' + need[0] + "\nModuleNotFoundError: No module named '" + need[0] + "'</span>"); note("Скрипту нужен " + need[0] + ", а в <b>" + active + "</b> его нет. Активируйте analiz: <code>conda activate analiz</code>."); return; }
       if (en.pkgs.pandas && en.pkgs.pandas.charAt(0) === "2") { print('<span class="ok">Строк: 1837</span>\n<span class="er">FutureWarning: ... this behavior will change in pandas 3.0</span>'); note("Скрипт написан под pandas 3, а здесь pandas 2. Работает, но с предупреждениями. Поэтому у каждого проекта своё окружение."); return; }
       print('<span class="ok">Строк: 1837\nОтчёт сохранён: результаты' + (os === "win" ? "\\" : "/") + "отчёт_добыча_2026.xlsx</span>"); note("Скрипт отработал в окружении <b>" + active + "</b>."); return;
     }
@@ -299,7 +299,7 @@ SyntaxError: invalid syntax</pre></div>
 
   var QUICK = [
     'python -c "import pandas"',
-    "conda activate ey",
+    "conda activate analiz",
     'python -c "import pandas"',
     'python -c "import seaborn"',
     "conda install -c conda-forge seaborn",
@@ -334,8 +334,8 @@ SyntaxError: invalid syntax</pre></div>
       "Команды пишем в приложении <b>Терминал</b> или во встроенном терминале VS Code. Запуск Python: <code>python3</code> (внутри активного conda-окружения работает и <code>python</code>).";
     $("termTitle").textContent = win ? "Anaconda Prompt (miniconda3)" : "Терминал, zsh";
     $("cmdConda").innerHTML =
-      cmdRow("conda create -n ey python=3.14", "создать окружение ey с Python 3.14") +
-      cmdRow("conda activate ey", "включить окружение, в начале строки появится (ey)") +
+      cmdRow("conda create -n analiz python=3.14", "создать окружение analiz с Python 3.14") +
+      cmdRow("conda activate analiz", "включить окружение, в начале строки появится (analiz)") +
       cmdRow("conda install -c conda-forge pandas openpyxl matplotlib jupyter", "поставить библиотеки для анализа данных из бесплатного канала") +
       cmdRow("conda env list", "список окружений, активное отмечено *") +
       cmdRow("conda deactivate", "выйти из окружения");

@@ -376,7 +376,7 @@ for well, pressure in pressures.items():
     if (!flood) return;
     clearInterval(flood); flood = null;
     if (showTrace) {
-      whOut.innerHTML = EY.esc(whOut.textContent) + '\n<span class="c-err">^C\nTraceback (most recent call last):\n  File "C:\\Users\\aigerim\\ey_python\\loop.py", line 3, in &lt;module&gt;\n    print("Осталось:", i)\nKeyboardInterrupt</span>';
+      whOut.innerHTML = EY.esc(whOut.textContent) + '\n<span class="c-err">^C\nTraceback (most recent call last):\n  File "C:\\Users\\aigerim\\python_analiz\\loop.py", line 3, in &lt;module&gt;\n    print("Осталось:", i)\nKeyboardInterrupt</span>';
       whOut.scrollTop = whOut.scrollHeight;
       $("btnCtrlC").classList.remove("pulse");
       $("btnCtrlC").disabled = true;
