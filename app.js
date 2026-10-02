@@ -23,11 +23,6 @@
   }
 
   /* ---------- шапка и листалка ---------- */
-  // Логотип EY в инверсной версии для тёмной шапки: белые буквы, жёлтый луч. Исходник: ey-logo.svg
-  var LOGO = '<svg class="brand-logo" viewBox="0 0 1168 1195" role="img" aria-label="EY">' +
-    '<path fill="#FFE600" d="M0 427 1168 0v220z"/>' +
-    '<path fill="#fff" d="M10 604h335l79 136H187v97h214v124H187v97h296v136H10zM401 604h195l101 192 100-192h193L784 961v233H607V961z"/>' +
-    "</svg>";
   function buildChrome() {
     var cur = parseInt(document.body.getAttribute("data-page") || "0", 10);
     var header = document.getElementById("site-header");
@@ -40,10 +35,8 @@
           '<span class="nav-title">' + esc(p.short) + "</span></a>";
       }).join("");
       header.innerHTML =
-        '<div class="bar"><a class="brand" href="index.html">' + LOGO + '<span class="brand-name">Python-аналитика с ИИ</span></a>' +
-        '<nav class="nav" aria-label="Темы">' +
-        '<a class="nav-home" href="index.html"' + (cur === 0 ? ' aria-current="page"' : "") + ">Оглавление</a>" +
-        links + "</nav></div>";
+        '<div class="bar"><a class="brand" href="' + PAGES[0].file + '">Python-аналитика с ИИ</a>' +
+        '<nav class="nav" aria-label="Темы">' + links + "</nav></div>";
       var active = header.querySelector('.nav a[aria-current="page"]');
       var navEl = header.querySelector(".nav");
       if (active && navEl && navEl.scrollWidth > navEl.clientWidth) {
@@ -56,17 +49,20 @@
       if (cur > 1) {
         var pr = PAGES[cur - 2];
         html += '<a class="prev" href="' + pr.file + '"><span class="p-dir">Назад</span><span class="p-name">' + (cur - 1) + ". " + esc(pr.title) + "</span></a>";
-      } else {
-        html += '<a class="prev" href="index.html"><span class="p-dir">Назад</span><span class="p-name">Оглавление</span></a>';
       }
       if (cur < PAGES.length) {
         var nx = PAGES[cur];
         html += '<a class="next" href="' + nx.file + '"><span class="p-dir">Дальше</span><span class="p-name">' + (cur + 1) + ". " + esc(nx.title) + "</span></a>";
-      } else {
-        html += '<a class="next" href="index.html"><span class="p-dir">Дальше</span><span class="p-name">Оглавление</span></a>';
       }
       pager.className = "pager";
       pager.innerHTML = html;
+    }
+    // Нижний блок со ссылкой на программы, как в гиде по ИИ-инструментам.
+    if (cur > 0) {
+      document.body.insertAdjacentHTML("beforeend",
+        '<div class="cta"><div class="wrap"><div><h2>Хотите научить команду работать с данными?</h2>' +
+        "<p>Корпоративные тренинги Digital Академии EY по Python, анализу данных и ИИ под задачи вашей компании.</p></div>" +
+        '<a class="cta-btn" href="https://eyacademyeurasia.com/digital?utm_source=python-training" target="_blank" rel="noopener">Узнать о программах &rarr;</a></div></div>');
     }
   }
 
@@ -606,12 +602,4 @@
   function init() { buildChrome(); autoHighlight(); bindCopy(); }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();
-})();
-
-// Embedded in the Tilda page: report page height so the iframe grows with the content.
-(function () {
-  if (window.parent === window) return;
-  function post() { window.parent.postMessage({ eyPython: "height", h: document.body.scrollHeight }, "*"); }
-  if (window.ResizeObserver) new ResizeObserver(post).observe(document.body);
-  window.addEventListener("load", post);
 })();

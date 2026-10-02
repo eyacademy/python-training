@@ -89,12 +89,10 @@ kbd {
 }
 .brand {
   display: flex; align-items: center; gap: 12px; color: #fff; text-decoration: none;
-  font-family: var(--f-display); font-weight: 700; font-size: 0.78rem; letter-spacing: 0.01em;
+  font-family: var(--f-display); font-weight: 700; font-size: 0.9rem; letter-spacing: 0.01em;
   white-space: nowrap;
 }
-.brand-logo { width: 38px; height: 39px; flex: none; }
-.brand-name { padding-left: 12px; border-left: 1px solid rgba(255,255,255,0.28); line-height: 1.6; }
-@media (max-width: 520px) { .brand-name { display: none; } }
+@media (max-width: 520px) { .brand { display: none; } }
 .nav {
   display: flex; gap: 6px; margin-left: auto; align-items: center; overflow-x: auto;
   scrollbar-width: none; padding-block: 10px;
@@ -111,18 +109,12 @@ kbd {
 .nav a .nav-title { display: none; font-family: var(--f-body); font-weight: 600; }
 .nav a[aria-current="page"] { background: var(--yellow); color: var(--ink); border-color: var(--yellow); padding: 0 14px 0 12px; }
 .nav a[aria-current="page"] .nav-title { display: inline; }
-.nav a.nav-home { font-family: var(--f-body); padding: 0 14px; }
 
 /* ---------- каркас ---------- */
 .wrap { max-width: var(--wrap); margin: 0 auto; padding-inline: var(--gutter); }
 main { padding-block: 40px 40px; }
 
 .hero { padding-block: 24px 8px; display: grid; gap: 20px; }
-.eyebrow {
-  font-family: var(--f-mono); font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase;
-  color: var(--muted); display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
-}
-.eyebrow .pill { background: var(--ink); color: var(--yellow); padding: 3px 10px; border-radius: 4px; letter-spacing: 0.04em; }
 h1, h2, h3 { text-wrap: balance; margin: 0; }
 h1 {
   font-family: var(--f-display); font-weight: 700; font-size: clamp(2rem, 3.6vw, 3.1rem);
@@ -334,7 +326,12 @@ table.t td code { white-space: nowrap; }
 .pager a .p-dir { font-family: var(--f-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
 .pager a .p-name { font-weight: 700; }
 .pager a.next { text-align: right; margin-left: auto; }
-.foot-note { color: var(--muted); font-size: 0.85rem; max-width: var(--wrap); margin: 0 auto; padding: 0 var(--gutter) 32px; }
+.cta { background: var(--yellow); padding-block: 56px; }
+.cta .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 24px; }
+.cta .wrap > div { max-width: 720px; }
+.cta p { margin: 8px 0 0; font-size: 1.05rem; }
+.cta-btn { display: inline-flex; align-items: center; gap: 10px; background: var(--ink); color: #fff; font-weight: 700; padding: 14px 22px; text-decoration: none; transition: transform .15s; }
+.cta-btn:hover { transform: translateY(-2px); }
 
 .fly-chip { position: fixed; z-index: 100; font-family: var(--f-mono); font-weight: 700; font-size: 0.9rem; background: var(--yellow); color: var(--ink); border: 2px solid var(--ink); border-radius: 20px; padding: 6px 14px; pointer-events: none; box-shadow: 0 6px 18px rgba(46,46,56,0.25); white-space: nowrap; }
 
