@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Ошибки и traceback</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Onest:wght@400;500;600;700&family=Unbounded:wght@500;700&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%22-13 0 1195 1195%22%3E%3Cstyle%3E.l%7Bfill:%232E2E38%7D%40media %28prefers-color-scheme:dark%29%7B.l%7Bfill:%23fff%7D%7D%3C/style%3E%3Cpath fill=%22%23FFE600%22 d=%22M0 427 1168 0v220z%22/%3E%3Cpath class=%22l%22 d=%22M10 604h335l79 136H187v97h214v124H187v97h296v136H10zM401 604h195l101 192 100-192h193L784 961v233H607V961z%22/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<style>
+  .gallery { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 24px; align-items: start; }
+  @media (max-width: 1000px) { .gallery { grid-template-columns: 1fr; } }
+  .err-list { display: grid; gap: 8px; position: sticky; top: 84px; }
+  .err-list button { font: inherit; text-align: left; cursor: pointer; padding: 12px 16px; border-radius: 8px; border: 1.5px solid var(--line); background: var(--surface); display: grid; gap: 2px; }
+  .err-list button:hover { border-color: var(--ink); }
+  .err-list button.is-on { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .err-list .e-name { font-family: var(--f-mono); font-weight: 700; font-size: 0.92rem; }
+  .err-list button.is-on .e-name { color: var(--yellow); }
+  .err-list .e-sub { font-size: 0.82rem; color: var(--muted); }
+  .err-list button.is-on .e-sub { color: #C9C9D4; }
+  .tb { background: #1F1F27; color: #E6E6EE; border-radius: var(--r); padding: 18px 0; font-family: var(--f-mono); font-size: 0.86rem; line-height: 1.6; overflow-x: auto; }
+  .tb .ln { display: block; padding: 0 22px; white-space: pre; border-left: 4px solid transparent; transition: background 0.3s ease, opacity 0.3s ease; cursor: pointer; }
+  .tb .ln.lib { color: #8E8EA2; }
+  .tb .ln.what-line { color: #FF8F84; font-weight: 600; }
+  .tb .ln.caret { color: #FF8F84; }
+  .tb.focus .ln { opacity: 0.35; }
+  .tb.focus .ln.lit { opacity: 1; background: rgba(255,230,0,0.18); border-left-color: var(--yellow); }
+  .tb .ln.scan { background: rgba(255,230,0,0.28); border-left-color: var(--yellow); opacity: 1; }
+  .tb .tag-where, .tb .tag-what { font-family: var(--f-body); font-weight: 700; font-size: 0.72rem; margin-left: 14px; padding: 2px 8px; border-radius: 4px; background: var(--yellow); color: var(--ink); white-space: nowrap; }
+  .read-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+  .explain-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 900px) { .explain-grid { grid-template-columns: 1fr; } }
+  .explain-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px 20px; display: grid; gap: 8px; align-content: start; }
+  .explain-card .panel-title { margin: 0; }
+  .explain-card.what { border-color: #F0B4AE; }
+  .explain-card.where { border-color: #E8D55A; }
+  .quiz { display: grid; gap: 16px; }
+  .quiz .opts { display: grid; gap: 10px; }
+  .quiz .opt { font: inherit; text-align: left; cursor: pointer; padding: 14px 18px; border-radius: 8px; border: 2px solid var(--line); background: var(--surface); font-size: 1rem; transition: border-color 0.2s ease, background 0.2s ease; }
+  .quiz .opt:hover:not([disabled]) { border-color: var(--ink); }
+  .quiz .opt.right { border-color: var(--green); background: var(--green-soft); }
+  .quiz .opt.wrong { border-color: var(--red); background: var(--red-soft); }
+  .quiz .opt[disabled] { cursor: default; color: var(--ink); }
+  .quiz-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .score { font-family: var(--f-mono); font-weight: 700; }
+  .dots { display: flex; gap: 6px; }
+  .dots span { width: 12px; height: 12px; border-radius: 50%; background: var(--line); }
+  .dots span.ok { background: var(--green); } .dots span.bad { background: var(--red); } .dots span.cur { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .feedback { animation: rise 0.35s ease; }
+  @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .steps3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 900px) { .steps3 { grid-template-columns: 1fr; } }
+  .steps3 .panel { display: grid; gap: 6px; align-content: start; }
+  .steps3 .big { font-family: var(--f-display); font-size: 1.6rem; font-weight: 700; }
+</style>
+</head>
+<body data-page="6">
+<header id="site-header"></header>
+
+<main class="wrap">
+  <div class="hero">
+    <div class="eyebrow"><span class="pill">Тема 6</span><span>День 1 · Обработка ошибок и типовые причины падения скриптов</span></div>
+    <h1>Ошибки и traceback</h1>
+    <p class="lead">Когда скрипт падает, Python печатает traceback: отчёт о том, что сломалось и где. Он выглядит страшно, но читать нужно только две строки. Ошибка это нормальная часть работы, а не поломка компьютера.</p>
+    <div class="metaphor">
+      <span class="m-label">Метафора</span>
+      <p>Traceback это <b>записка от Python</b>. Читаем её снизу вверх: последняя строка говорит, <b>что</b> случилось. Строка выше с <code>line N</code> и именем вашего файла говорит, <b>где</b>.</p>
+    </div>
+  </div>
+
+  <section class="block">
+    <div class="steps3">
+      <div class="panel"><span class="big">1</span><b>Последняя строка</b><span class="muted">Тип ошибки и короткое описание: <code>KeyError: 'Нефть'</code>.</span></div>
+      <div class="panel"><span class="big">2</span><b>Строка с вашим файлом</b><span class="muted">Ищите <code>File "...otchet.py", line 14</code>. Строки из <code>site-packages</code> это внутренности библиотек, их пропускаем.</span></div>
+      <div class="panel"><span class="big">3</span><b>Код под ней</b><span class="muted">Python показывает саму строку и подчёркивает <code>^^^^</code> место, где споткнулся.</span></div>
+    </div>
+  </section>
+
+  <section class="block" id="gallery">
+    <div class="block-head">
+      <span class="tag">Интерактив</span>
+      <h2>Галерея из семи ошибок</h2>
+      <p>Выберите ошибку слева. Кнопки над запиской подсвечивают «что» и «где». По строкам тоже можно щёлкать.</p>
+    </div>
+    <div class="gallery">
+      <div class="err-list" id="errList"></div>
+      <div class="stack">
+        <div class="read-btns">
+          <button class="btn primary" id="btnWhat">Что случилось: последняя строка</button>
+          <button class="btn primary" id="btnWhere">Где: строка с line N</button>
+          <button class="btn" id="btnScan">Прочитать снизу вверх</button>
+        </div>
+        <div class="tb" id="tb"></div>
+        <div class="explain-grid">
+          <div class="explain-card what"><div class="panel-title">Что это значит</div><div id="eWhat"></div></div>
+          <div class="explain-card where"><div class="panel-title">Почему так бывает</div><div id="eWhy"></div></div>
+        </div>
+        <div class="pair">
+          <div><div class="bad-label">Было</div><pre class="code" id="eBad"></pre></div>
+          <div><div class="good-label">Исправили</div><pre class="code" id="eGood"></pre></div>
+        </div>
+        <div class="ask">
+          <div class="block-head"><span class="tag">Спроси ИИ</span><h3>Промпт «объясни ошибку» с этой запиской</h3></div>
+          <pre class="prompt-box" id="ePrompt"></pre>
+          <div class="btn-row"><button class="btn primary" data-copy="#ePrompt">Скопировать промпт</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="quiz">
+    <div class="block-head">
+      <span class="tag">Тренажёр</span>
+      <h2>Найдите причину по записке</h2>
+      <p>Прочитайте traceback снизу вверх и выберите причину. Правильный ответ один.</p>
+    </div>
+    <div class="panel quiz">
+      <div class="quiz-head"><span class="score" id="qScore"></span><div class="dots" id="qDots"></div></div>
+      <div class="tb" id="qTb"></div>
+      <div class="opts" id="qOpts"></div>
+      <div id="qFeedback"></div>
+      <div class="btn-row"><button class="btn dark" id="qNext" hidden>Следующая записка</button></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <span class="tag">Как это выглядит в коде</span>
+      <h2>try/except: поймать ожидаемую ошибку и сказать понятными словами</h2>
+    </div>
+    <div class="grid-2">
+<pre data-hl>from pathlib import Path
+import pandas as pd
+
+DATA_FILE = Path("data") / "добыча_2026.xlsx"
+
+try:
+    df = pd.read_excel(DATA_FILE, sheet_name="Добыча")
+except FileNotFoundError:
+    print(f"Не найден файл {DATA_FILE}. Откройте в VS Code папку проекта.")
+    raise SystemExit(1)</pre>
+      <div class="stack">
+        <p><b>try</b> означает «попробуй». <b>except</b> означает «если случилась вот эта ошибка, сделай вот это». Так скрипт пишет человеку понятный текст вместо длинной записки.</p>
+        <p>Ловите только ту ошибку, которую ждёте. <code>except:</code> без имени прячет все ошибки подряд, и настоящую причину потом не найти.</p>
+        <p>Просите ИИ добавлять такие проверки: «добавь понятные сообщения, если нет файла, листа или колонки».</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block mistake">
+    <div class="block-head">
+      <span class="tag">Типичная ошибка</span>
+      <h2>Читать записку сверху и чинить библиотеку</h2>
+    </div>
+    <p>Верхние строки часто указывают внутрь pandas: <code>site-packages\pandas\core\frame.py</code>. Там ничего исправлять не нужно, библиотека работает правильно. Ошибка почти всегда в вашей строке: неверное имя колонки, путь, тип данных. Спускайтесь вниз до последней строки, потом ищите выше своё имя файла.</p>
+  </section>
+
+  <section class="block ask">
+    <div class="block-head">
+      <span class="tag">Спроси ИИ</span>
+      <h2>Универсальный промпт для любой ошибки</h2>
+    </div>
+<pre class="prompt-box" id="promptAny">Я новичок в Python. Мой скрипт упал с ошибкой. Ниже код и полный traceback.
+1) Объясни простыми словами, что означает последняя строка traceback.
+2) Укажи, в какой строке моего файла ошибка (не внутри библиотек).
+3) Назови 2-3 вероятные причины, начиная с самой частой.
+4) Покажи исправленный фрагмент и объясни, что поменялось.
+Не переписывай весь скрипт.
+
+Код:
+&lt;вставьте код&gt;
+
+Traceback:
+&lt;вставьте traceback целиком&gt;</pre>
+    <div class="btn-row"><button class="btn primary" data-copy="#promptAny">Скопировать промпт</button></div>
+  </section>
+</main>
+
+<nav id="pager"></nav>
+<p class="foot-note">Данные условные, названия объектов вымышлены. Тренинг «Python-аналитика с ИИ», EY.</p>
+
+<script src="app.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var U = 'C:\\Users\\aigerim\\ey_python\\otchet.py';
+  var L = 'C:\\Users\\aigerim\\miniconda3\\envs\\ey\\Lib\\site-packages\\pandas';
+  /* роли строк: w = где (File с вашим файлом), c = код, k = подчёркивание, x = что, l = библиотека */
+  var ERRORS = [
+    { name: "SyntaxError", sub: "пропущена запятая",
+      tb: [["  File \"" + U + "\", line 5", "w"], ["    print(\"Добыча за день:\" oil)", "c"], ["          ^^^^^^^^^^^^^^^^^^^^^", "k"], ["SyntaxError: invalid syntax. Perhaps you forgot a comma?", "x"]],
+      what: "Python не смог прочитать запись. Скрипт даже не начал работать: SyntaxError проверяется до запуска. Подсказка в конце прямо говорит: «может, забыли запятую?».",
+      why: "Пропущена запятая, скобка или кавычка. Часто бывает после ручной правки кода от ИИ. Обратите внимание: у SyntaxError нет строки «Traceback», сразу идёт место.",
+      bad: 'print("Добыча за день:" oil)', good: 'print("Добыча за день:", oil)' },
+    { name: "NameError", sub: "опечатка в имени",
+      tb: [["Traceback (most recent call last):", ""], ["  File \"" + U + "\", line 8, in <module>", "w"], ["    print(oil_totl)", "c"], ["          ^^^^^^^^", "k"], ["NameError: name 'oil_totl' is not defined. Did you mean: 'oil_total'?", "x"]],
+      what: "Python не нашёл переменную с именем oil_totl. Он сам предлагает похожее имя: oil_total.",
+      why: "Опечатка, другой регистр букв, переменная создаётся ниже по коду или в ячейке Jupyter, которую вы не запустили.",
+      bad: "oil_total = 1720\nprint(oil_totl)", good: "oil_total = 1720\nprint(oil_total)" },
+    { name: "TypeError", sub: "текст плюс число",
+      tb: [["Traceback (most recent call last):", ""], ["  File \"" + U + "\", line 11, in <module>", "w"], ["    message = \"Итого нефти: \" + total", "c"], ["              ~~~~~~~~~~~~~~~~^~~~~~~", "k"], ["TypeError: can only concatenate str (not \"float\") to str", "x"]],
+      what: "Операция не подходит для этих типов. Текст можно склеить только с текстом, а total это число float.",
+      why: "Смешали типы: текст и число, None и число. В pandas то же бывает, когда колонка с числами прочиталась как текст.",
+      bad: 'message = "Итого нефти: " + total', good: 'message = f"Итого нефти: {total}"' },
+    { name: "ValueError", sub: "текст не превращается в число",
+      tb: [["Traceback (most recent call last):", ""], ["  File \"" + U + "\", line 6, in <module>", "w"], ["    oil = float(\"1 234,5\")", "c"], ["ValueError: could not convert string to float: '1 234,5'", "x"]],
+      what: "Тип правильный (текст), но значение не подходит: float не понимает пробел внутри числа и запятую.",
+      why: "Числа из Excel записаны по-русски: с пробелом между разрядами и запятой. Для Python разделитель дробной части только точка.",
+      bad: 'oil = float("1 234,5")', good: 'text = "1 234,5"\noil = float(text.replace(" ", "").replace(",", "."))' },
+    { name: "KeyError", sub: "нет такой колонки",
+      tb: [["Traceback (most recent call last):", ""], ["  File \"" + L + "\\core\\indexes\\base.py\", line 3641, in get_loc", "l"], ["    return self._engine.get_loc(casted_key)", "l"], ["  File \"pandas/_libs/index.pyx\", line 168, in pandas._libs.index.IndexEngine.get_loc", "l"], ["KeyError: 'Нефть'", "l"], ["", ""], ["The above exception was the direct cause of the following exception:", ""], ["", ""], ["Traceback (most recent call last):", ""], ["  File \"" + U + "\", line 14, in <module>", "w"], ["    total = df[\"Нефть\"].sum()", "c"], ["            ~~^^^^^^^^^", "k"], ["  File \"" + L + "\\core\\frame.py\", line 4378, in __getitem__", "l"], ["    indexer = self.columns.get_loc(key)", "l"], ["  File \"" + L + "\\core\\indexes\\base.py\", line 3648, in get_loc", "l"], ["    raise KeyError(key) from err", "l"], ["KeyError: 'Нефть'", "x"]],
+      what: "В таблице нет колонки с именем 'Нефть'. KeyError значит «нет такого ключа»: в словаре или в названиях колонок DataFrame.",
+      why: "Колонка называется иначе: Нефть_т. Ещё бывают лишние пробелы в заголовке Excel ('Нефть_т ') и другой регистр. Проверьте list(df.columns).",
+      bad: 'total = df["Нефть"].sum()', good: 'print(list(df.columns))   # сначала посмотреть имена\ntotal = df["Нефть_т"].sum()' },
+    { name: "FileNotFoundError", sub: "файл не там",
+      tb: [["Traceback (most recent call last):", ""], ["  File \"" + U + "\", line 2, in <module>", "w"], ["    df = pd.read_excel(\"добыча_2026.xlsx\")", "c"], ["         ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^", "k"], ["  File \"" + L + "\\io\\excel\\_base.py\", line 481, in read_excel", "l"], ["    io = ExcelFile(", "l"], ["  File \"" + L + "\\io\\common.py\", line 939, in get_handle", "l"], ["    handle = open(handle, ioargs.mode)", "l"], ["FileNotFoundError: [Errno 2] No such file or directory: 'добыча_2026.xlsx'", "x"]],
+      what: "Python искал файл добыча_2026.xlsx в текущей папке и не нашёл. Путь относительный, он считается от папки, из которой запустили скрипт.",
+      why: "Файл лежит в data/, а в коде путь без папки. Или терминал открыт не в папке проекта. Или опечатка в имени, включая расширение .xlsx против .xls.",
+      bad: 'df = pd.read_excel("добыча_2026.xlsx")', good: 'from pathlib import Path\ndf = pd.read_excel(Path("data") / "добыча_2026.xlsx")' },
+    { name: "ModuleNotFoundError", sub: "библиотека не установлена",
+      tb: [["Traceback (most recent call last):", ""], ["  File \"" + U + "\", line 1, in <module>", "w"], ["    import pandas as pd", "c"], ["ModuleNotFoundError: No module named 'pandas'", "x"]],
+      what: "В текущем окружении Python нет библиотеки pandas. Код правильный, не хватает ящика с инструментами.",
+      why: "Библиотеку не установили или VS Code запускает другой Python, не окружение ey. Внизу окна VS Code посмотрите, какой интерпретатор выбран.",
+      bad: "import pandas as pd", good: "# в терминале, в нужном окружении:\n# conda activate ey\n# conda install pandas\nimport pandas as pd" }
+  ];
+
+  var cur = 0, tb = $("tb");
+  function tbHtml(lines, tags) {
+    return lines.map(function (l, i) {
+      var role = l[1], cls = "ln" + (role === "l" ? " lib" : "") + (role === "x" ? " what-line" : "") + (role === "k" ? " caret" : "");
+      var tag = "";
+      if (tags && role === "x") tag = '<span class="tag-what">что</span>';
+      if (tags && role === "w") tag = '<span class="tag-where">где</span>';
+      return '<span class="' + cls + '" data-role="' + role + '" data-i="' + i + '">' + EY.esc(l[0] || " ") + tag + "</span>";
+    }).join("");
+  }
+  function focus(el, roles) {
+    el.classList.add("focus");
+    el.querySelectorAll(".ln").forEach(function (l) { l.classList.toggle("lit", roles.indexOf(l.getAttribute("data-role")) >= 0); });
+  }
+  function show(i) {
+    cur = i;
+    var e = ERRORS[i];
+    document.querySelectorAll("#errList button").forEach(function (b, k) { b.classList.toggle("is-on", k === i); });
+    tb.classList.remove("focus");
+    tb.innerHTML = tbHtml(e.tb, true);
+    tb.querySelectorAll(".ln").forEach(function (l) {
+      l.addEventListener("click", function () {
+        var r = l.getAttribute("data-role");
+        if (r === "x") focus(tb, ["x"]); else if (r === "w" || r === "c" || r === "k") focus(tb, ["w", "c", "k"]); else tb.classList.remove("focus");
+      });
+    });
+    $("eWhat").textContent = e.what; $("eWhy").textContent = e.why;
+    EY.renderCode($("eBad"), e.bad); EY.renderCode($("eGood"), e.good);
+    $("ePrompt").textContent = "Объясни эту ошибку Python простыми словами, как новичку.\nСкажи, что значит последняя строка, в какой строке моего файла проблема и как её исправить.\nПокажи исправленную строку.\n\n" + e.tb.map(function (l) { return l[0]; }).join("\n");
+  }
+  $("errList").innerHTML = ERRORS.map(function (e, i) { return '<button data-e="' + i + '"><span class="e-name">' + e.name + '</span><span class="e-sub">' + e.sub + "</span></button>"; }).join("");
+  document.querySelectorAll("#errList button").forEach(function (b) { b.addEventListener("click", function () { show(+b.getAttribute("data-e")); }); });
+  $("btnWhat").addEventListener("click", function () { focus(tb, ["x"]); });
+  $("btnWhere").addEventListener("click", function () { focus(tb, ["w", "c", "k"]); });
+  var scanning = null;
+  $("btnScan").addEventListener("click", function () {
+    if (scanning) clearInterval(scanning);
+    tb.classList.remove("focus");
+    var ls = Array.prototype.slice.call(tb.querySelectorAll(".ln"));
+    var k = ls.length - 1;
+    scanning = setInterval(function () {
+      ls.forEach(function (l) { l.classList.remove("scan"); });
+      if (k < 0) { clearInterval(scanning); scanning = null; focus(tb, ["x", "w", "c", "k"]); return; }
+      ls[k].classList.add("scan");
+      var role = ls[k].getAttribute("data-role");
+      k--;
+      if (role === "w") { clearInterval(scanning); scanning = null; setTimeout(function () { ls.forEach(function (l) { l.classList.remove("scan"); }); focus(tb, ["x", "w", "c", "k"]); }, 500); }
+    }, 380);
+  });
+  show(4);
+
+  /* тренажёр */
+  var Q = [
+    { tb: [["Traceback (most recent call last):", ""], ["  File \"" + U + "\", line 17, in <module>", "w"], ["    total = df[\"Нефть_т\"].sum()", "c"], ["  File \"" + L + "\\core\\series.py\", line 7493, in sum", "l"], ["    return NDFrame.sum(self, axis, skipna, numeric_only, min_count, **kwargs)", "l"], ["TypeError: unsupported operand type(s) for +: 'float' and 'str'", "x"]],
+      opts: ["В колонке Нефть_т есть значения-тексты вроде \"1 234,5\", их нельзя сложить с числами", "Файл Excel не найден в папке data", "В названии колонки опечатка"], right: 0,
+      why: "Последняя строка: нельзя сложить float и str. Значит, в колонке рядом лежат числа и текст. Путь и имя колонки в порядке, иначе была бы другая ошибка (FileNotFoundError или KeyError). Лечится через pd.to_numeric." },
+    { tb: [["Traceback (most recent call last):", ""], ["  File \"" + U + "\", line 21, in <module>", "w"], ["    by_date = df.groupby(\"Дата\")[\"Нефть_т\"].sum()", "c"], ["  File \"" + L + "\\core\\groupby\\grouper.py\", line 901, in get_grouper", "l"], ["    raise KeyError(gpr)", "l"], ["KeyError: 'Дата'", "x"]],
+      opts: ["Не установлена библиотека pandas", "В файле колонка называется иначе, например 'Дата ' с пробелом в конце", "В колонке Дата есть пропуски"], right: 1,
+      why: "KeyError с именем колонки значит, что такой колонки нет. Самые частые причины: лишний пробел в заголовке Excel или другое написание. Проверка: print(list(df.columns)). Лечение: df.columns = df.columns.str.strip()." },
+    { tb: [["Traceback (most recent call last):", ""], ["  File \"" + U + "\", line 40, in <module>", "w"], ["    summary.to_excel(\"результаты/отчёт_добыча_2026.xlsx\")", "c"], ["  File \"" + L + "\\io\\excel\\_openpyxl.py\", line 56, in __init__", "l"], ["    from openpyxl.workbook import Workbook", "l"], ["ImportError: `Import openpyxl` failed.  Use pip or conda to install the openpyxl package.", "x"]],
+      opts: ["Файл отчёта открыт в Excel", "Папка результаты не существует", "В окружении нет библиотеки openpyxl, которую pandas использует для xlsx"], right: 2,
+      why: "Последняя строка прямо говорит: импорт openpyxl не удался, установите пакет. pandas сам не пишет xlsx, он просит openpyxl. Решение: conda install openpyxl или pip install openpyxl в активном окружении. Открытый в Excel файл дал бы PermissionError." },
+    { tb: [["Traceback (most recent call last):", ""], ["  File \"" + U + "\", line 9, in <module>", "w"], ["    df = pd.read_excel(Path(\"data\") / \"добыча_2026.xlsx\")", "c"], ["  File \"" + L + "\\io\\common.py\", line 939, in get_handle", "l"], ["    handle = open(handle, ioargs.mode)", "l"], ["FileNotFoundError: [Errno 2] No such file or directory: 'data\\\\добыча_2026.xlsx'", "x"]],
+      opts: ["Терминал запущен не из папки проекта, поэтому относительный путь data/... не находится", "В файле нет листа Добыча", "pandas не умеет читать xlsx"], right: 0,
+      why: "Путь в коде правильный, а файл не найден. Значит, Python ищет data\\ не в той папке. Относительный путь считается от текущей папки терминала. Откройте в VS Code папку проекта целиком (File, Open Folder) или перейдите в неё командой cd. Неверный лист дал бы ValueError: Worksheet named ... not found." },
+    { tb: [["Traceback (most recent call last):", ""], ["  File \"" + U + "\", line 5, in <module>", "w"], ["    shifts = int(input(\"Сколько смен? \"))", "c"], ["             ~~~^^^^^^^^^^^^^^^^^^^^^^^^", "k"], ["ValueError: invalid literal for int() with base 10: ''", "x"]],
+      opts: ["Переменная shifts не создана", "Пользователь нажал Enter, ничего не введя, и пустой текст не превращается в число", "Нужно установить библиотеку input"], right: 1,
+      why: "В кавычках в конце пусто: ''. int() получил пустую строку. Такое бывает, если просто нажать Enter. В скрипте для отчёта лучше не спрашивать через input, а брать значения из настроек вверху файла." }
+  ];
+  var qi = 0, answers = [];
+  function qRender() {
+    var q = Q[qi];
+    $("qTb").innerHTML = tbHtml(q.tb, false);
+    $("qOpts").innerHTML = q.opts.map(function (o, k) { return '<button class="opt" data-o="' + k + '">' + EY.esc(o) + "</button>"; }).join("");
+    $("qFeedback").innerHTML = ""; $("qNext").hidden = true;
+    var right = answers.filter(function (a) { return a; }).length;
+    $("qScore").textContent = "Записка " + (qi + 1) + " из " + Q.length + " · верно: " + right;
+    $("qDots").innerHTML = Q.map(function (_, k) { return '<span class="' + (answers[k] === true ? "ok" : answers[k] === false ? "bad" : "") + (k === qi ? " cur" : "") + '"></span>'; }).join("");
+    $("qOpts").querySelectorAll(".opt").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var k = +b.getAttribute("data-o"), ok = k === q.right;
+        answers[qi] = ok;
+        $("qOpts").querySelectorAll(".opt").forEach(function (x, j) { x.disabled = true; if (j === q.right) x.classList.add("right"); else if (j === k) x.classList.add("wrong"); });
+        focus($("qTb"), ["x", "w", "c", "k"]);
+        $("qFeedback").innerHTML = '<div class="feedback ' + (ok ? "ok-box" : "err-box") + '"><b>' + (ok ? "Верно." : "Не совсем.") + "</b> " + EY.esc(q.why) + "</div>";
+        $("qNext").hidden = false;
+        $("qNext").textContent = qi < Q.length - 1 ? "Следующая записка" : "Пройти заново";
+        var r2 = answers.filter(function (a) { return a; }).length;
+        $("qScore").textContent = "Записка " + (qi + 1) + " из " + Q.length + " · верно: " + r2;
+        $("qDots").innerHTML = Q.map(function (_, j) { return '<span class="' + (answers[j] === true ? "ok" : answers[j] === false ? "bad" : "") + (j === qi ? " cur" : "") + '"></span>'; }).join("");
+      });
+    });
+  }
+  $("qNext").addEventListener("click", function () {
+    if (qi < Q.length - 1) qi++; else { qi = 0; answers = []; }
+    qRender();
+  });
+  qRender();
+})();
+</script>
+</body>
+</html>

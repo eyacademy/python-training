@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>PEP 8 и современный Python</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Onest:wght@400;500;600;700&family=Unbounded:wght@500;700&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%22-13 0 1195 1195%22%3E%3Cstyle%3E.l%7Bfill:%232E2E38%7D%40media %28prefers-color-scheme:dark%29%7B.l%7Bfill:%23fff%7D%7D%3C/style%3E%3Cpath fill=%22%23FFE600%22 d=%22M0 427 1168 0v220z%22/%3E%3Cpath class=%22l%22 d=%22M10 604h335l79 136H187v97h214v124H187v97h296v136H10zM401 604h195l101 192 100-192h193L784 961v233H607V961z%22/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<style>
+  .ba { position: relative; border-radius: var(--r); overflow: hidden; background: var(--code-bg); user-select: none; }
+  .ba .layer { margin: 0; border-radius: 0; font-size: 0.86rem; overflow: hidden; min-width: 0; padding-top: 44px; }
+  .ba-grid { display: flex; min-height: 420px; }
+  .ba .layer.before { background: #3A2E33; flex: 0 0 var(--cut, 50%); }
+  .ba .layer.after { background: #25303A; flex: 1 1 0; }
+  .ba .layer .ln { white-space: pre-wrap; word-break: break-all; padding-left: 12px; padding-right: 14px; }
+  .ba .layer.numbers .ln::before { width: 1.6em; margin-right: 10px; }
+  .ba .divider { position: absolute; top: 0; bottom: 0; left: var(--cut, 50%); width: 4px; margin-left: -2px; background: var(--yellow); pointer-events: none; }
+  .ba .divider::after { content: "◀ ▶"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--yellow); color: var(--ink); font-size: 0.75rem; font-weight: 700; padding: 6px 8px; border-radius: 20px; white-space: nowrap; }
+  .ba .lbl { position: absolute; top: 10px; font-family: var(--f-mono); font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 4px; pointer-events: none; }
+  .ba .lbl.l { left: 12px; background: #FF8F84; color: var(--ink); }
+  .ba .lbl.r { right: 12px; background: #9FE0A6; color: var(--ink); }
+  .ba .layer .ln.mark { background: rgba(255, 230, 0, 0.22); border-left-color: var(--yellow); }
+  .ba-range { margin-top: 6px; }
+  .cats { display: flex; flex-wrap: wrap; gap: 8px; }
+  .cat-note { min-height: 80px; }
+  .rules { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+  @media (max-width: 1100px) { .rules { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .rule { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 16px 14px; display: grid; gap: 10px; align-content: start; }
+  .rule b { font-size: 0.98rem; }
+  .rule .ex { font-family: var(--f-mono); font-size: 0.8rem; display: grid; gap: 4px; }
+  .rule .ex .no { color: var(--red); text-decoration: line-through; text-decoration-color: rgba(200,55,45,0.5); }
+  .rule .ex .yes { color: var(--green); }
+  .news { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+  @media (max-width: 1000px) { .news { grid-template-columns: 1fr; } }
+  .new-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; display: grid; gap: 10px; align-content: start; }
+  .ver { font-family: var(--f-mono); font-weight: 700; font-size: 0.75rem; background: var(--ink); color: var(--yellow); border-radius: 4px; padding: 2px 8px; justify-self: start; }
+  .repl-demo { background: #1F1F27; color: #E6E6EE; border-radius: 8px; padding: 12px 16px; font-family: var(--f-mono); font-size: 0.8rem; line-height: 1.6; white-space: pre-wrap; overflow-x: auto; }
+  .repl-demo .p { color: #C792EA; font-weight: 700; }
+  .repl-demo .k { color: #FF9CAC; } .repl-demo .s { color: #A8E6B0; } .repl-demo .n { color: #FFB870; }
+  .repl-demo .e { color: #FF8F84; font-weight: 700; } .repl-demo .h { color: #FFE600; } .repl-demo .m { color: #8E8EA2; }
+  .fs { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+  @media (max-width: 900px) { .fs { grid-template-columns: 1fr; } }
+  .fs-out { font-family: var(--f-mono); font-size: 1.4rem; font-weight: 700; background: var(--yellow-wash); border: 2px solid var(--ink); border-radius: 8px; padding: 16px 20px; white-space: pre; overflow-x: auto; }
+  .tools-table td:first-child { font-family: var(--f-mono); font-weight: 700; white-space: nowrap; }
+  .tools-table td code.c { white-space: nowrap; }
+  .tools-table td:last-child { width: 1%; white-space: nowrap; }
+</style>
+</head>
+<body data-page="10">
+<header id="site-header"></header>
+
+<main class="wrap">
+  <div class="hero">
+    <div class="eyebrow"><span class="pill">Тема 10</span><span>Дополнительно · стиль кода и современные инструменты</span></div>
+    <h1>PEP 8 и современный Python</h1>
+    <p class="lead">PEP 8 это общепринятые правила оформления Python-кода: отступы, имена, пробелы, длина строки. Код по PEP 8 одинаково читают вы, коллеги и ИИ. Вручную следить за правилами не нужно, это делает ruff за одну команду.</p>
+    <div class="metaphor">
+      <span class="m-label">Метафора</span>
+      <p>PEP 8 это <b>шаблон оформления отчёта</b>: одинаковые шрифты, поля и заголовки. Содержание от этого не меняется, но читать в разы проще. ruff это кнопка «применить шаблон».</p>
+    </div>
+  </div>
+
+  <section class="block" id="ba">
+    <div class="block-head">
+      <span class="tag">Интерактив</span>
+      <h2>До и после: тянем шторку</h2>
+      <p>Слева код, как его иногда пишут наспех. Справа тот же код после <code>ruff format</code>, <code>ruff check --fix</code> и переименования. Тяните жёлтую шторку или ползунок, чтобы раскрыть одну из сторон. Потом выбирайте тему и смотрите, какие строки поменялись.</p>
+    </div>
+    <div class="ba" id="baBox">
+      <div class="ba-grid">
+        <pre class="code layer before numbers" id="baBefore"></pre>
+        <pre class="code layer after numbers" id="baAfter"></pre>
+      </div>
+      <div class="divider"></div>
+      <span class="lbl l">ДО</span><span class="lbl r">ПОСЛЕ</span>
+    </div>
+    <input type="range" class="ba-range" id="baRange" min="0" max="100" value="50" aria-label="Положение шторки до и после">
+    <div class="cats" id="cats"></div>
+    <div class="note cat-note" id="catNote"></div>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <span class="tag">Справочник</span>
+      <h2>Восемь правил PEP 8 для новичка</h2>
+    </div>
+    <div class="rules">
+      <div class="rule"><b>Отступ 4 пробела</b><div class="ex"><span class="no">⇥ print(x)</span><span class="yes">····print(x)</span></div><span class="small muted">VS Code ставит 4 пробела при нажатии Tab.</span></div>
+      <div class="rule"><b>Имена snake_case</b><div class="ex"><span class="no">OilSum, oilSum</span><span class="yes">oil_sum</span></div><span class="small muted">Маленькие буквы и подчёркивание.</span></div>
+      <div class="rule"><b>Константы заглавными</b><div class="ex"><span class="no">data_file = ...</span><span class="yes">DATA_FILE = ...</span></div><span class="small muted">Настройки вверху файла, которые не меняются.</span></div>
+      <div class="rule"><b>Пробелы вокруг = и операторов</b><div class="ex"><span class="no">x=a+b</span><span class="yes">x = a + b</span></div><span class="small muted">И после запятой: <code>f(a, b)</code>.</span></div>
+      <div class="rule"><b>Строка до 79 символов</b><div class="ex"><span class="no">очень длинная строка…</span><span class="yes">перенос внутри скобок</span></div><span class="small muted">ruff по умолчанию допускает 88.</span></div>
+      <div class="rule"><b>Импорты вверху, по одному</b><div class="ex"><span class="no">import pandas, os</span><span class="yes">import os<br>import pandas as pd</span></div><span class="small muted">Сначала встроенные, потом сторонние, потом свои.</span></div>
+      <div class="rule"><b>Две пустые строки перед def</b><div class="ex"><span class="no">x = 1<br>def f():</span><span class="yes">x = 1<br><br><br>def f():</span></div><span class="small muted">Функции визуально отделены.</span></div>
+      <div class="rule"><b>Имена говорят, что внутри</b><div class="ex"><span class="no">x, df2, tmp</span><span class="yes">total_oil, clean_df</span></div><span class="small muted">Комментарий объясняет зачем, а не что.</span></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <span class="tag">Что нового</span>
+      <h2>Python 3.13 и 3.14: что заметит новичок</h2>
+      <p>На тренинге используем 3.14 (вышла 7 октября 2025 года, сейчас 3.14.7), 3.13 тоже подходит. Всё из этого блока можно показать вживую.</p>
+    </div>
+    <div class="news">
+      <div class="new-card"><span class="ver">3.13</span><b>Новый интерактивный режим (REPL)</b>
+        <span>Цветное приглашение, редактирование нескольких строк целиком, история по стрелке вверх, <kbd>F1</kbd> справка, <kbd>F3</kbd> режим вставки кода. Выйти можно словом <code>exit</code> без скобок.</span>
+        <div class="repl-demo"><span class="p">&gt;&gt;&gt;</span> oil = <span class="n">1650</span>
+<span class="p">&gt;&gt;&gt;</span> <span class="k">for</span> s <span class="k">in</span> [<span class="s">"A"</span>, <span class="s">"B"</span>]:
+<span class="p">...</span>     print(s, oil / <span class="n">2</span>)
+A 825.0
+B 825.0</div></div>
+      <div class="new-card"><span class="ver">3.13</span><b>Цветные ошибки и новые подсказки</b>
+        <span>Traceback раскрашен: тип ошибки и место выделены цветом. Python подсказывает правильное имя аргумента и предупреждает, если ваш файл называется как библиотека.</span>
+        <div class="repl-demo"><span class="p">&gt;&gt;&gt;</span> "T-101 T-102".split(max_split=<span class="n">1</span>)
+<span class="e">TypeError</span>: split() got an unexpected keyword argument 'max_split'. <span class="h">Did you mean 'maxsplit'?</span></div></div>
+      <div class="new-card"><span class="ver">3.14</span><b>Подсветка синтаксиса прямо в REPL и подсказки к опечаткам</b>
+        <span>Код в интерактивном режиме раскрашивается, пока вы печатаете. Опечатку в ключевом слове Python распознаёт и предлагает правильное.</span>
+        <div class="repl-demo"><span class="k">whille</span> True:
+<span class="m">^^^^^^</span>
+<span class="e">SyntaxError</span>: invalid syntax. <span class="h">Did you mean 'while'?</span></div></div>
+      <div class="new-card"><span class="ver">3.14</span><b>Короче запись except и t-строки</b>
+        <span>Несколько ошибок можно перечислить без скобок: <code>except ValueError, TypeError:</code>. Появились t-строки <code>t"..."</code>: похожи на f-строки, но возвращают шаблон, а не готовый текст. Аналитику в работе пока хватит f-строк.</span>
+        <div class="repl-demo"><span class="k">try</span>:
+    oil = float(text)
+<span class="k">except</span> ValueError, TypeError:
+    oil = None</div></div>
+    </div>
+  </section>
+
+  <section class="block" id="fstr">
+    <div class="block-head">
+      <span class="tag">Интерактив</span>
+      <h2>f-строки: число в тексте с нужным форматом</h2>
+      <p>Буква <code>f</code> перед кавычками разрешает вставлять переменные в фигурных скобках. После двоеточия пишется формат.</p>
+    </div>
+    <div class="fs">
+      <div class="panel stack">
+        <label class="field">Значение oil<input type="text" id="fsVal" class="mono" value="1234.5678"></label>
+        <div class="cats" id="fsSpecs"></div>
+      </div>
+      <div class="stack">
+        <pre class="code" id="fsCode"></pre>
+        <div class="fs-out" id="fsOut"></div>
+        <p class="small muted" id="fsNote"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="tools">
+    <div class="block-head">
+      <span class="tag">Инструменты</span>
+      <h2>pip, conda, uv и ruff в одной таблице</h2>
+    </div>
+    <div class="table-wrap">
+      <table class="t tools-table">
+        <thead><tr><th>Инструмент</th><th>Что делает</th><th>Главная команда</th><th></th></tr></thead>
+        <tbody id="toolRows"></tbody>
+      </table>
+    </div>
+    <div class="grid-2">
+      <div class="stack">
+        <p><b>Как подключить ruff в VS Code.</b> Установите расширение Ruff (издатель Astral Software). В настройках включите «Format On Save» и выберите Ruff форматтером по умолчанию. Код будет выравниваться при каждом сохранении файла.</p>
+      </div>
+<pre data-hl="plain"># pyproject.toml, настройки ruff для проекта
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N"]   # стиль, ошибки, импорты, имена</pre>
+    </div>
+  </section>
+
+  <section class="block mistake">
+    <div class="block-head">
+      <span class="tag">Типичная ошибка</span>
+      <h2>Файл назвали как библиотеку</h2>
+    </div>
+    <div class="pair">
+      <div><div class="bad-label">Файл pandas.py или random.py</div>
+<pre data-hl="plain">AttributeError: module 'random' has no attribute 'randint'
+(consider renaming 'C:\Users\aigerim\ey_python\random.py'
+since it has the same name as the standard library module
+named 'random' and prevents importing that standard
+library module)</pre></div>
+      <div><div class="good-label">Переименовать файл</div>
+<pre data-hl="plain">random.py   →  dice_test.py
+pandas.py   →  otchet_pandas.py
+
+# и удалить папку __pycache__ рядом, если она есть</pre></div>
+    </div>
+    <p>Python ищет модуль сначала в папке со скриптом. Файл <code>pandas.py</code> перекрывает настоящую библиотеку, и <code>import pandas</code> загружает ваш файл. Начиная с 3.13 Python сам подсказывает эту причину в тексте ошибки. Не называйте файлы <code>pandas.py</code>, <code>numpy.py</code>, <code>random.py</code>, <code>json.py</code>.</p>
+  </section>
+
+  <section class="block ask">
+    <div class="block-head">
+      <span class="tag">Спроси ИИ</span>
+      <h2>Попросите привести код к PEP 8 и объяснить правки</h2>
+    </div>
+<pre class="prompt-box" id="prompt10">Приведи этот код к PEP 8, как это сделали бы ruff format и ruff check --fix.
+Переименуй функции и переменные в snake_case, константы в UPPER_CASE, убери неиспользуемые импорты.
+Логику не меняй. После кода дай таблицу: что поменялось, какое правило PEP 8, зачем.
+Если где-то уместна f-строка или pathlib.Path вместо строки с путём, предложи.
+
+&lt;вставьте код&gt;</pre>
+    <div class="btn-row"><button class="btn primary" data-copy="#prompt10">Скопировать промпт</button></div>
+  </section>
+</main>
+
+<nav id="pager"></nav>
+<p class="foot-note">Данные условные, названия объектов вымышлены. Тренинг «Python-аналитика с ИИ», EY.</p>
+
+<script src="app.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var BEFORE = [
+    "import pandas as pd,os",
+    "from pathlib import *",
+    "import matplotlib.pyplot as plt",
+    "def OilSum( DF,Obj ):",
+    "  x=DF[DF['Объект']==Obj]['Нефть_т'].sum() ;return x",
+    "Data=pd.read_excel(Path('data')/'добыча_2026.xlsx',sheet_name='Добыча')",
+    "for o in ['КТЛ-1','КТЛ-2','ЗВП','ЗСГ'] : print(o,OilSum(Data,o),'тонн нефти за январь-май 2026 года по объекту')"
+  ];
+  var AFTER = [
+    "from pathlib import Path",
+    "",
+    "import pandas as pd",
+    "",
+    'DATA_FILE = Path("data") / "добыча_2026.xlsx"',
+    'OBJECTS = ["КТЛ-1", "КТЛ-2", "ЗВП", "ЗСГ"]',
+    "",
+    "",
+    "def oil_sum(df, obj):",
+    '    """Сумма нефти по объекту, тонн."""',
+    '    return df.loc[df["Объект"] == obj, "Нефть_т"].sum()',
+    "",
+    "",
+    'data = pd.read_excel(DATA_FILE, sheet_name="Добыча")',
+    "for obj in OBJECTS:",
+    "    total = oil_sum(data, obj)",
+    '    print(f"{obj}: {total:,.1f} т за январь-май 2026")'
+  ];
+  var CATS = [
+    { k: "names", t: "имена", b: [3, 5, 6], a: [8, 13, 14, 15], note: "<b>Имена.</b> Функции и переменные пишем в snake_case: <code>oil_sum</code>, <code>data</code>. Константы заглавными: <code>DATA_FILE</code>. Однобуквенные <code>x</code> и <code>o</code> заменили словами. Важно: <code>ruff format</code> имена не трогает. Их правите вы или ИИ, а <code>ruff check</code> с правилами N подскажет, где нарушение." },
+    { k: "indent", t: "отступы", b: [4], a: [9, 10], note: "<b>Отступы.</b> Было 2 пробела и две команды в одной строке через <code>;</code>. Стало 4 пробела и одна команда на строку. Это исправляет <code>ruff format</code> сам." },
+    { k: "spaces", t: "пробелы", b: [0, 3, 4, 5, 6], a: [4, 5, 10, 13], note: "<b>Пробелы.</b> Вокруг <code>=</code> и <code>==</code>, после запятой, без пробелов внутри скобок <code>( DF,Obj )</code>. Кавычки стали двойными, как принято в ruff и black. Всё это делает <code>ruff format</code>." },
+    { k: "length", t: "длина строки", b: [5, 6], a: [13, 14, 15, 16], note: "<b>Длина строки.</b> Строки длиннее 88 символов ruff переносит сам, если это возможно внутри скобок. Строку с циклом и print в одной строке разбили на три. Длинный путь вынесли в константу <code>DATA_FILE</code>, текст сократили через f-строку." },
+    { k: "imports", t: "импорты", b: [0, 1, 2], a: [0, 2], note: "<b>Импорты.</b> По одному на строку, сначала встроенные (pathlib), пустая строка, потом сторонние (pandas). <code>import *</code> заменили на конкретное имя <code>Path</code>. Неиспользуемые <code>os</code> и <code>matplotlib</code> удалили. Это делает <code>ruff check --fix</code> (правила F401, F403, I001)." }
+  ];
+  var baBox = $("baBox"), before = $("baBefore"), after = $("baAfter");
+  var curCat = null;
+  function render() {
+    var bc = {}, ac = {};
+    if (curCat) { curCat.b.forEach(function (i) { bc[i] = "mark"; }); curCat.a.forEach(function (i) { ac[i] = "mark"; }); }
+    EY.renderCode(before, BEFORE.join("\n"), { classes: bc });
+    EY.renderCode(after, AFTER.join("\n"), { classes: ac });
+    document.querySelectorAll("[data-cat]").forEach(function (b) { b.classList.toggle("is-on", curCat && b.getAttribute("data-cat") === curCat.k); });
+    $("catNote").innerHTML = curCat ? curCat.note : "Выберите тему: имена, отступы, пробелы, длина строки или импорты. Жёлтым подсветятся строки до и после.";
+  }
+  $("cats").innerHTML = CATS.map(function (c) { return '<button class="chip-btn" data-cat="' + c.k + '">' + c.t + "</button>"; }).join("");
+  document.querySelectorAll("[data-cat]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var c = CATS.filter(function (x) { return x.k === b.getAttribute("data-cat"); })[0];
+      curCat = curCat === c ? null : c; render();
+    });
+  });
+  function setCut(v) { baBox.style.setProperty("--cut", v + "%"); $("baRange").value = v; }
+  $("baRange").addEventListener("input", function () { setCut(this.value); });
+  var dragging = false;
+  function fromEvent(e) { var r = baBox.getBoundingClientRect(); var x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left; setCut(Math.max(0, Math.min(100, Math.round(x / r.width * 100)))); }
+  baBox.addEventListener("pointerdown", function (e) { dragging = true; fromEvent(e); baBox.setPointerCapture && baBox.setPointerCapture(e.pointerId); });
+  baBox.addEventListener("pointermove", function (e) { if (dragging) fromEvent(e); });
+  baBox.addEventListener("pointerup", function () { dragging = false; });
+  render(); setCut(50);
+
+  /* f-строки */
+  var SPECS = [
+    { s: "", note: "Без формата: число как есть." },
+    { s: ":.1f", note: ".1f это один знак после точки." },
+    { s: ":,.1f", note: "Запятая разделяет тысячи, как принято в английском формате. Для русского вида добавьте .replace(\",\", \" \")." },
+    { s: ":>12.1f", note: ">12 выравнивает по правому краю в поле шириной 12 символов. Удобно для столбиков в терминале." },
+    { s: "=", note: "Знак = печатает имя переменной и значение. Удобно при проверке кода." },
+    { s: ":.1%", note: ".1% умножает на 100 и добавляет знак процента. Подходит для долей: 0.953 станет 95.3%." }
+  ];
+  var curSpec = SPECS[2];
+  $("fsSpecs").innerHTML = SPECS.map(function (x, i) { return '<button class="chip-btn" data-spec="' + i + '">{oil' + EY.esc(x.s) + "}</button>"; }).join("");
+  function pyRepr(v) { return Number.isInteger(v) ? v.toFixed(1) : String(v); }
+  function commas(str) { var p = str.split("."); p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ","); return p.join("."); }
+  function fmt(v, s) {
+    if (s === "") return pyRepr(v);
+    if (s === "=") return "oil=" + pyRepr(v);
+    if (s === ":.1f") return v.toFixed(1);
+    if (s === ":,.1f") return commas(v.toFixed(1));
+    if (s === ":>12.1f") { var t = v.toFixed(1); return (new Array(Math.max(0, 12 - t.length) + 1).join(" ")) + t; }
+    if (s === ":.1%") return (v * 100).toFixed(1) + "%";
+    return "";
+  }
+  function fs() {
+    var raw = $("fsVal").value.trim().replace(",", ".");
+    var v = parseFloat(raw);
+    document.querySelectorAll("[data-spec]").forEach(function (b) { b.classList.toggle("is-on", SPECS[+b.getAttribute("data-spec")] === curSpec); });
+    EY.renderCode($("fsCode"), "oil = " + (isNaN(v) ? raw : pyRepr(v)) + '\nprint(f"Добыча: {oil' + curSpec.s + '} т")');
+    $("fsOut").textContent = isNaN(v) ? "ValueError: введите число" : "Добыча: " + fmt(v, curSpec.s) + " т";
+    $("fsNote").textContent = curSpec.note;
+  }
+  document.querySelectorAll("[data-spec]").forEach(function (b) { b.addEventListener("click", function () { curSpec = SPECS[+b.getAttribute("data-spec")]; if (curSpec.s === ":.1%" && parseFloat($("fsVal").value) > 5) $("fsVal").value = "0.953"; fs(); }); });
+  $("fsVal").addEventListener("input", fs);
+  fs();
+
+  /* инструменты */
+  var TOOLS = [
+    ["pip", "Ставит Python-пакеты из PyPI в активное окружение", "pip install pandas openpyxl"],
+    ["conda", "Создаёт окружения со своим Python и ставит пакеты из conda-forge", "conda create -n ey python=3.14"],
+    ["uv", "Быстрый менеджер проекта: Python, окружение .venv и пакеты одной командой", "uv run otchet.py"],
+    ["ruff format", "Выравнивает оформление: отступы, пробелы, кавычки, переносы", "ruff format ."],
+    ["ruff check", "Находит ошибки и нарушения стиля, часть исправляет сам", "ruff check --fix ."]
+  ];
+  $("toolRows").innerHTML = TOOLS.map(function (t) {
+    return "<tr><td>" + t[0] + "</td><td>" + t[1] + '</td><td><code class="c">' + EY.esc(t[2]) + '</code></td><td><button class="btn small copy-btn" data-copy-text="' + EY.esc(t[2]) + '">Скопировать команду</button></td></tr>';
+  }).join("");
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Типы данных Python</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Onest:wght@400;500;600;700&family=Unbounded:wght@500;700&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%22-13 0 1195 1195%22%3E%3Cstyle%3E.l%7Bfill:%232E2E38%7D%40media %28prefers-color-scheme:dark%29%7B.l%7Bfill:%23fff%7D%7D%3C/style%3E%3Cpath fill=%22%23FFE600%22 d=%22M0 427 1168 0v220z%22/%3E%3Cpath class=%22l%22 d=%22M10 604h335l79 136H187v97h214v124H187v97h296v136H10zM401 604h195l101 192 100-192h193L784 961v233H607V961z%22/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<style>
+  .types-table td:nth-child(1) { font-family: var(--f-mono); font-weight: 600; font-size: 1rem; white-space: nowrap; }
+  .types-table td:nth-child(3) code { font-size: 0.85rem; }
+  .lab { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: stretch; }
+  @media (max-width: 900px) { .lab { grid-template-columns: 1fr; } }
+  .builder { display: grid; grid-template-columns: 1fr 110px 1fr; gap: 12px; align-items: end; }
+  .builder select { font-family: var(--f-mono); font-size: 1rem; padding: 12px; }
+  .repl { background: var(--code-bg); color: var(--code-fg); border-radius: var(--r); padding: 22px 24px; font-family: var(--f-mono); font-size: 1.15rem; line-height: 1.7; min-height: 170px; white-space: pre-wrap; }
+  .repl .p { color: var(--yellow); }
+  .repl .kw { color: var(--code-kw); } .repl .str { color: var(--code-str); } .repl .num { color: var(--code-num); } .repl .fn, .repl .bi { color: var(--code-fn); }
+  .repl .res { display: inline-block; animation: rise 0.4s ease; }
+  .repl .res.err { color: #FF9A8F; }
+  .repl .dim { color: var(--code-muted); font-size: 0.85rem; }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .verdict { display: grid; gap: 10px; padding: 20px 22px; border-radius: var(--r); animation: rise 0.4s ease; }
+  .verdict.ok { background: var(--green-soft); }
+  .verdict.bad { background: var(--red-soft); }
+  .verdict .v-title { font-weight: 700; font-size: 1.05rem; }
+  .type-chip { display: inline-block; font-family: var(--f-mono); font-size: 0.85rem; font-weight: 600; padding: 2px 10px; border-radius: 20px; background: var(--surface); border: 1.5px solid currentColor; }
+  .quick { display: flex; flex-wrap: wrap; gap: 8px; }
+  .conv-row { display: grid; grid-template-columns: 1fr; gap: 4px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line-2); }
+  .conv-row:last-child { border-bottom: 0; }
+  .conv-row .expr { font-family: var(--f-mono); font-size: 0.92rem; }
+  .conv-row .val { font-family: var(--f-mono); font-weight: 600; }
+  .conv-row .val.err { color: var(--red); font-weight: 500; font-size: 0.88rem; }
+  @media (max-width: 900px) { .conv-row { grid-template-columns: 1fr; } }
+  .guess { display: flex; align-items: center; gap: 10px; font-size: 0.92rem; }
+</style>
+</head>
+<body data-page="2">
+<header id="site-header"></header>
+
+<main class="wrap">
+  <div class="hero">
+    <div class="eyebrow"><span class="pill">Тема 2</span><span>День 1 · Python минимум для чтения кода</span></div>
+    <h1>Типы данных</h1>
+    <p class="lead">Тип (type) говорит Python, что за значение лежит в переменной и что с ним можно делать. Числа складываются, текст склеивается. Число 10 и текст "10" выглядят похоже, но для Python это разные вещи.</p>
+    <div class="metaphor">
+      <span class="m-label">Метафора</span>
+      <p>Тип это <b>что за предмет в коробке</b>: целое число, число с точкой, текст или да/нет. Функция <code>type()</code> позволяет заглянуть в коробку и узнать, что там.</p>
+    </div>
+  </div>
+
+  <section class="block">
+    <div class="block-head">
+      <span class="tag">Справочник</span>
+      <h2>Семь типов, которые встретятся в коде аналитика</h2>
+    </div>
+    <div class="table-wrap">
+      <table class="t types-table">
+        <thead><tr><th>Тип</th><th>Что в коробке</th><th>Пример из кейса ТШО</th><th>Как в Excel</th></tr></thead>
+        <tbody>
+          <tr><td class="t-int">int</td><td>Целое число</td><td><code>shifts = 2</code>, <code>downtime_h = 6</code></td><td>Число без дробной части</td></tr>
+          <tr><td class="t-float">float</td><td>Число с точкой</td><td><code>oil_t = 552.9</code>, <code>pressure = 78.5</code></td><td>Число с десятичными. В Python дробная часть через точку, не через запятую</td></tr>
+          <tr><td class="t-str">str</td><td>Текст, всегда в кавычках</td><td><code>well = "T-101"</code>, <code>obj = "КТЛ-1"</code></td><td>Текст в ячейке. Сюда же попадает <code>"1 234,5"</code>, которое только выглядит как число</td></tr>
+          <tr><td class="t-bool">bool</td><td>Да или нет</td><td><code>is_injector = False</code></td><td>ИСТИНА / ЛОЖЬ</td></tr>
+          <tr><td class="t-list">list</td><td>Полка с пронумерованными ячейками</td><td><code>wells = ["T-101", "T-102", "T-103"]</code></td><td>Один столбец значений</td></tr>
+          <tr><td class="t-dict">dict</td><td>Картотека «ключ → значение»</td><td><code>record = {"скважина": "T-101", "нефть": 531.4}</code></td><td>Одна строка таблицы вместе с заголовками</td></tr>
+          <tr><td class="t-none">None</td><td>Пусто, значения нет</td><td><code>pressure = None</code></td><td>Пустая ячейка. В pandas пустые ячейки становятся <code>NaN</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="block" id="lab">
+    <div class="block-head">
+      <span class="tag">Интерактив</span>
+      <h2>Что получится?</h2>
+      <p>Выберите два значения и операцию. Сначала скажите вслух, что ответит Python, потом посмотрите.</p>
+    </div>
+    <div class="quick" aria-label="Готовые примеры">
+      <button class="chip-btn" data-q='"10"|+|"5"'>"10" + "5"</button>
+      <button class="chip-btn" data-q='10|+|5'>10 + 5</button>
+      <button class="chip-btn" data-q='"10"|*|3'>"10" * 3</button>
+      <button class="chip-btn" data-q='int("10")|+|5'>int("10") + 5</button>
+      <button class="chip-btn" data-q='"нефть"|+|5'>"нефть" + 5</button>
+      <button class="chip-btn" data-q='10|/|5'>10 / 5</button>
+      <button class="chip-btn" data-q='2.5|*|2'>2.5 * 2</button>
+      <button class="chip-btn" data-q='None|+|5'>None + 5</button>
+    </div>
+    <div class="lab">
+      <div class="panel stack">
+        <div class="builder">
+          <label class="field">Значение слева<select id="selA"></select></label>
+          <label class="field">Операция<select id="selOp"><option>+</option><option>-</option><option>*</option><option>/</option></select></label>
+          <label class="field">Значение справа<select id="selB"></select></label>
+        </div>
+        <label class="guess"><input type="checkbox" id="guessMode"> Режим угадайки: показывать ответ по кнопке</label>
+        <div class="btn-row"><button class="btn primary" id="btnShow" hidden>Показать ответ</button></div>
+        <div id="verdict"></div>
+      </div>
+      <div class="repl" id="repl" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <span class="tag">Интерактив</span>
+      <h2>Преобразования: int(), float(), str()</h2>
+      <p>Из Excel и из <code>input()</code> числа часто приходят текстом. Введите текст, как он записан в ячейке, и посмотрите, что сделает каждая функция.</p>
+    </div>
+    <div class="split">
+      <div class="panel stack">
+        <label class="field">Текст из ячейки <span class="hint">без кавычек, как видите в Excel</span>
+          <input type="text" id="convIn" class="mono" value="1 234,5"></label>
+        <div class="quick">
+          <button class="chip-btn" data-c="1650">1650</button>
+          <button class="chip-btn" data-c="552.9">552.9</button>
+          <button class="chip-btn" data-c="1 234,5">1 234,5</button>
+          <button class="chip-btn" data-c=" 78 ">" 78 "</button>
+          <button class="chip-btn" data-c="нефть">нефть</button>
+        </div>
+        <div class="note">Правило тренинга: перед расчётом убираем пробелы и меняем запятую на точку. В pandas то же самое делает <code>pd.to_numeric(..., errors="coerce")</code> (страница 9).</div>
+      </div>
+      <div class="panel" id="convOut"></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <span class="tag">Как это выглядит в коде</span>
+      <h2>Проверяем тип и приводим к нужному</h2>
+    </div>
+    <div class="grid-2">
+      <pre data-hl>oil_text = "552.9"          # пришло из файла текстом
+print(type(oil_text))       # &lt;class 'str'&gt;
+
+oil = float(oil_text)       # текст → число с точкой
+print(type(oil))            # &lt;class 'float'&gt;
+print(oil * 2)              # 1105.8
+
+shifts = int("2")           # текст → целое
+label = "Смен: " + str(shifts)   # число → текст для подписи
+print(label)                # Смен: 2</pre>
+      <div class="stack">
+        <p><b>Три функции-переводчика.</b> <code>int()</code> делает целое число, <code>float()</code> число с точкой, <code>str()</code> текст. Исходная переменная не меняется, новое значение нужно положить в коробку.</p>
+        <p><b>Для подписей удобнее f-строка.</b> Запись <code>f"Смен: {shifts}"</code> сама превращает число в текст.</p>
+        <p><b>Округление.</b> <code>round(552.94, 1)</code> даёт 552.9. Для отчёта округляем в конце, не на каждом шаге.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block mistake">
+    <div class="block-head">
+      <span class="tag">Типичная ошибка</span>
+      <h2>Числа из файла оказались текстом</h2>
+    </div>
+    <div class="pair">
+      <div><div class="bad-label">Результат неверный, ошибки нет</div>
+<pre data-hl>a = "552.9"     # из Excel пришёл текст
+b = "531.4"
+print(a + b)    # 552.9531.4</pre>
+<p class="small" style="margin-top:8px">Python не упал, он склеил два текста. Такую ошибку легко пропустить, поэтому смотрите на тип: <code>type(a)</code>, а в pandas <code>df.info()</code>.</p></div>
+      <div><div class="good-label">Правильно</div>
+<pre data-hl>a = float("552.9")
+b = float("531.4")
+print(a + b)    # 1084.3</pre>
+<p class="small" style="margin-top:8px">Сначала переводим текст в числа, потом считаем. Если в ячейке <code>"1 234,5"</code>, сначала <code>.replace(" ", "").replace(",", ".")</code>.</p></div>
+    </div>
+  </section>
+
+  <section class="block ask">
+    <div class="block-head">
+      <span class="tag">Спроси ИИ</span>
+      <h2>Попросите функцию, которая чистит числа</h2>
+    </div>
+<pre class="prompt-box" id="prompt2">Напиши на Python 3.14 функцию to_number(text), которая превращает текст из Excel в число float.
+Примеры входа: "1650", "552.9", "1 234,5", " 78 ", "", "нефть".
+Правила: убрать пробелы по краям и внутри, заменить запятую на точку.
+Если превратить нельзя, вернуть None и не падать.
+Покажи 6 проверок с print для каждого примера. Объясни код построчно, как новичку.</pre>
+    <div class="btn-row"><button class="btn primary" data-copy="#prompt2">Скопировать промпт</button></div>
+  </section>
+</main>
+
+<nav id="pager"></nav>
+<p class="foot-note">Данные условные, названия объектов вымышлены. Тренинг «Python-аналитика с ИИ», EY.</p>
+
+<script src="app.js"></script>
+<script>
+(function () {
+  var py = EY.py;
+  var VALUES = ['"10"', "10", "5", '"5"', "2", "3", "2.5", '"нефть"', 'int("10")', 'float("552.9")', "str(10)", "True", "None"];
+  var selA = document.getElementById("selA"), selB = document.getElementById("selB"), selOp = document.getElementById("selOp");
+  VALUES.forEach(function (v) { selA.add(new Option(v, v)); selB.add(new Option(v, v)); });
+  selA.value = '"10"'; selB.value = '"5"';
+  var repl = document.getElementById("repl"), verdict = document.getElementById("verdict");
+  var guess = document.getElementById("guessMode"), btnShow = document.getElementById("btnShow");
+
+  function kind(v) { return v.t; }
+  function explain(a, b, op, res, err) {
+    var ta = a.t, tb = b.t;
+    if (err) {
+      if (ta === "NoneType" || tb === "NoneType") return "None значит «пусто». С пустотой считать нельзя. Сначала проверьте пропуски: <code>if value is None</code>, а в pandas <code>isna()</code>.";
+      if (err.type === "TypeError" && (ta === "str" || tb === "str")) {
+        if (op === "+") return "Python не складывает текст с числом: непонятно, склеить или посчитать. Решите сами и приведите тип: <code>int(\"10\") + 5</code> даст 15, <code>\"10\" + str(5)</code> даст \"105\".";
+        if (op === "*") return "Текст можно умножить только на целое число, это повторение. Умножать текст на текст или на число с точкой нельзя.";
+        return "С текстом нельзя вычитать и делить. Сначала переведите текст в число: <code>float(...)</code>.";
+      }
+      return "Эти типы нельзя соединить такой операцией.";
+    }
+    if (ta === "str" && tb === "str" && op === "+") return "Два текста. Знак <code>+</code> их склеивает, а не складывает. Поэтому \"10\" + \"5\" даёт \"105\".";
+    if (op === "*" && (ta === "str" || tb === "str")) return "Текст, умноженный на целое число, повторяется нужное число раз.";
+    if (op === "/") return "Деление в Python всегда даёт float, даже если делится нацело: 10 / 5 = 2.0.";
+    if (ta === "bool" || tb === "bool") return "True считается как 1, False как 0. Это удобно для подсчёта: сумма True это число совпадений.";
+    if (res.t === "float") return "Если хотя бы одно число с точкой, результат тоже float.";
+    return "Два целых числа, обычная арифметика. Результат int.";
+  }
+
+  function run(reveal) {
+    var aSrc = selA.value, bSrc = selB.value, op = selOp.value;
+    var expr = aSrc + " " + op + " " + bSrc;
+    var a = py.evalExpr(aSrc), b = py.evalExpr(bSrc);
+    var res = null, err = null;
+    try { res = py.evalExpr(expr); } catch (e) { if (e instanceof py.PyError) err = e; else throw e; }
+    var hide = guess.checked && !reveal;
+    btnShow.hidden = !hide;
+    var head = '<span class="dim">Python 3.14, интерактивный режим</span>\n<span class="p">&gt;&gt;&gt;</span> ' + EY.hlLine(expr);
+    if (hide) {
+      repl.innerHTML = head + '\n<span class="res dim">? ваш ответ</span>';
+      verdict.innerHTML = "";
+      return;
+    }
+    if (err) {
+      repl.innerHTML = head + '\n<span class="res err">Traceback (most recent call last):\n  File "&lt;python-input-0&gt;", line 1, in &lt;module&gt;\n' + EY.esc(err.toString()) + "</span>";
+      verdict.innerHTML = '<div class="verdict bad"><div class="v-title">Ошибка ' + EY.esc(err.type) + "</div><div>" + explain(a, b, op, null, err) + "</div></div>";
+    } else {
+      repl.innerHTML = head + '\n<span class="res">' + EY.esc(py.repr(res)) + "</span>";
+      verdict.innerHTML = '<div class="verdict ok"><div class="v-title">Результат: <span class="mono">' + EY.esc(py.repr(res)) +
+        '</span> <span class="type-chip t-' + (res.t === "NoneType" ? "none" : res.t) + '">' + res.t + "</span></div><div>" + explain(a, b, op, res, null) + "</div></div>";
+    }
+    document.querySelectorAll("[data-q]").forEach(function (q) { q.classList.toggle("is-on", q.getAttribute("data-q") === aSrc + "|" + op + "|" + bSrc); });
+  }
+  [selA, selB, selOp].forEach(function (s) { s.addEventListener("change", function () { run(false); }); });
+  guess.addEventListener("change", function () { run(false); });
+  btnShow.addEventListener("click", function () { run(true); btnShow.hidden = true; });
+  document.querySelectorAll("[data-q]").forEach(function (q) {
+    q.addEventListener("click", function () {
+      var p = q.getAttribute("data-q").split("|");
+      selA.value = p[0]; selOp.value = p[1]; selB.value = p[2]; run(false);
+    });
+  });
+  run(false);
+
+  /* преобразования */
+  var convIn = document.getElementById("convIn"), convOut = document.getElementById("convOut");
+  function lit(s) { return '"' + s.replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"'; }
+  function row(exprShown, fn) {
+    var val, cls = "val";
+    try { var r = fn(); val = EY.esc(py.repr(r)) + ' <span class="type-chip t-' + (r.t === "NoneType" ? "none" : r.t) + '" style="margin-left:6px">' + r.t + "</span>"; }
+    catch (e) { if (!(e instanceof py.PyError)) throw e; val = EY.esc(e.toString()); cls += " err"; }
+    return '<div class="conv-row"><div class="expr">' + EY.esc(exprShown) + '</div><div class="' + cls + '">' + val + "</div></div>";
+  }
+  function conv() {
+    var s = convIn.value, L = lit(s);
+    var cleaned = s.replace(/ /g, "").replace(/,/g, ".");
+    convOut.innerHTML = '<div class="panel-title">Что ответит Python</div>' +
+      row("int(" + L + ")", function () { return py.evalExpr("int(" + L + ")"); }) +
+      row("float(" + L + ")", function () { return py.evalExpr("float(" + L + ")"); }) +
+      row("str(" + L + ")", function () { return py.evalExpr("str(" + L + ")"); }) +
+      row('float(x.replace(" ", "").replace(",", "."))', function () { return py.evalExpr("float(" + lit(cleaned) + ")"); });
+    document.querySelectorAll("[data-c]").forEach(function (c) { c.classList.toggle("is-on", c.getAttribute("data-c") === s); });
+  }
+  convIn.addEventListener("input", conv);
+  document.querySelectorAll("[data-c]").forEach(function (c) { c.addEventListener("click", function () { convIn.value = c.getAttribute("data-c"); conv(); }); });
+  conv();
+})();
+</script>
+</body>
+</html>

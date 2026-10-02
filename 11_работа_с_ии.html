@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Работа с ИИ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Onest:wght@400;500;600;700&family=Unbounded:wght@500;700&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%22-13 0 1195 1195%22%3E%3Cstyle%3E.l%7Bfill:%232E2E38%7D%40media %28prefers-color-scheme:dark%29%7B.l%7Bfill:%23fff%7D%7D%3C/style%3E%3Cpath fill=%22%23FFE600%22 d=%22M0 427 1168 0v220z%22/%3E%3Cpath class=%22l%22 d=%22M10 604h335l79 136H187v97h214v124H187v97h296v136H10zM401 604h195l101 192 100-192h193L784 961v233H607V961z%22/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<style>
+  .cycle { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; position: relative; }
+  @media (max-width: 900px) { .cycle { grid-template-columns: 1fr 1fr; gap: 12px; } }
+  .node { font: inherit; color: var(--ink); cursor: pointer; text-align: left; background: var(--surface); border: 2px solid var(--line); border-radius: 12px; padding: 18px 18px 16px; margin-right: 34px; position: relative; display: grid; gap: 6px; align-content: start; transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease; }
+  .node:last-child { margin-right: 0; }
+  .node:not(:last-child)::after { content: ""; position: absolute; right: -30px; top: 50%; width: 22px; height: 3px; background: var(--ink); }
+  .node:not(:last-child)::before { content: ""; position: absolute; right: -32px; top: calc(50% - 6px); border: 7.5px solid transparent; border-left: 9px solid var(--ink); border-right: 0; }
+  @media (max-width: 900px) { .node { margin-right: 0; } .node::after, .node::before { display: none; } }
+  .node:hover { border-color: var(--ink); }
+  .node.is-on { border-color: var(--ink); background: var(--yellow); transform: translateY(-4px); }
+  .node .num { font-family: var(--f-display); font-weight: 700; font-size: 1.9rem; line-height: 1; }
+  .node .nt { font-weight: 700; font-size: 1.05rem; }
+  .node .nd { font-size: 0.85rem; color: var(--ink-2); }
+  .loopback { display: flex; align-items: center; gap: 12px; margin-top: 10px; font-size: 0.85rem; color: var(--muted); }
+  .loopback svg { flex: 1; height: 26px; }
+  .node-detail { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; animation: rise 0.35s ease; }
+  @media (max-width: 900px) { .node-detail { grid-template-columns: 1fr; } }
+  @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .builder { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+  @media (max-width: 1000px) { .builder { grid-template-columns: 1fr; } }
+  .builder textarea { min-height: 64px; font-size: 0.9rem; overflow: hidden; resize: none; }
+  #nodeDetail .code { align-self: start; }
+  #nodeDetail .code .ln { white-space: pre-wrap; }
+  .quality { display: flex; flex-wrap: wrap; gap: 8px; }
+  .q { font-size: 0.8rem; font-weight: 600; padding: 4px 10px; border-radius: 20px; border: 1.5px solid var(--line); color: var(--muted); background: var(--surface); }
+  .q::before { content: "○ "; }
+  .q.ok { border-color: var(--green); color: var(--green); background: var(--green-soft); }
+  .q.ok::before { content: "✓ "; }
+  .prompt-live { min-height: 320px; position: sticky; top: 84px; }
+  .prompt-live mark { background: var(--yellow); padding: 0 2px; border-radius: 2px; }
+  .checklist { display: grid; gap: 10px; }
+  .check { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start; padding: 14px 18px; background: var(--surface); border: 1.5px solid var(--line); border-radius: 10px; cursor: pointer; transition: border-color 0.2s ease, background 0.2s ease; }
+  .check:hover { border-color: var(--ink); }
+  .check.done { background: var(--green-soft); border-color: var(--green); }
+  .check.done b { text-decoration: line-through; text-decoration-color: rgba(31,122,77,0.45); }
+  .check span.d { display: block; font-size: 0.85rem; color: var(--muted); margin-top: 2px; }
+  .check-bar { display: flex; align-items: center; gap: 14px; }
+  .check-bar .bar { flex: 1; height: 10px; background: var(--line-2); border-radius: 5px; overflow: hidden; }
+  .check-bar .bar i { display: block; height: 100%; background: var(--green); transition: width 0.4s ease; }
+  .check-bar .cnt { font-family: var(--f-mono); font-weight: 700; }
+  .never { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  @media (max-width: 900px) { .never { grid-template-columns: 1fr; } }
+  .never div { background: var(--red-soft); border-radius: 10px; padding: 14px 16px; display: grid; gap: 4px; }
+  .never b { color: var(--red); }
+  table.df { border-collapse: collapse; font-family: var(--f-mono); font-size: 0.86rem; width: 100%; background: var(--surface); }
+  table.df th, table.df td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; white-space: nowrap; transition: background 0.4s ease, color 0.4s ease; }
+  table.df th { background: var(--ink); color: #fff; font-weight: 600; font-size: 0.8rem; }
+  table.df td.num { text-align: right; }
+  table.df td.secret { background: #FFE3E0; }
+  table.df td.masked { background: var(--green-soft); animation: flash 0.9s ease; }
+  table.df th.dropped, table.df td.dropped { opacity: 0.25; text-decoration: line-through; }
+</style>
+</head>
+<body data-page="11">
+<header id="site-header"></header>
+
+<main class="wrap">
+  <div class="hero">
+    <div class="eyebrow"><span class="pill">Тема 11</span><span>Сквозная линия обоих дней</span></div>
+    <h1>Работа с ИИ</h1>
+    <p class="lead">ИИ-ассистент пишет синтаксис быстрее нас. Наша работа: точно поставить задачу, прочитать ответ, проверить его на своих данных и подогнать под свой файл. Хороший результат зависит от промпта и от проверки, а не от удачи.</p>
+    <div class="metaphor">
+      <span class="m-label">Метафора</span>
+      <p>ИИ это <b>быстрый стажёр</b>, который знает весь Python, но не видел ваш файл и ваши правила. Дайте ему чёткое ТЗ, проверьте работу, как проверили бы расчёт коллеги, и только потом отправляйте отчёт.</p>
+    </div>
+  </div>
+
+  <section class="block" id="cycle">
+    <div class="block-head">
+      <span class="tag">Схема</span>
+      <h2>Четыре шага, которые повторяем в каждом блоке</h2>
+      <p>Нажмите на шаг, чтобы открыть подробности, или проиграйте цикл целиком.</p>
+    </div>
+    <div class="cycle" id="nodes"></div>
+    <div class="loopback"><span>новые данные или новая задача</span>
+      <svg viewBox="0 0 600 26" preserveAspectRatio="none" aria-hidden="true"><path d="M598 4 V18 H6 V6" fill="none" stroke="#6C6C7A" stroke-width="2" stroke-dasharray="6 6"/><path d="M1 10 L6 2 L11 10" fill="none" stroke="#6C6C7A" stroke-width="2"/></svg>
+      <button class="btn small" id="btnCycle">Проиграть цикл</button>
+    </div>
+    <div class="panel" id="nodeDetail"></div>
+  </section>
+
+  <section class="block" id="builder">
+    <div class="block-head">
+      <span class="tag">Интерактив</span>
+      <h2>Конструктор промпта</h2>
+      <p>Выберите готовый пример или заполните поля своими словами. Справа сразу собирается промпт по шаблону тренинга. Индикатор снизу подскажет, чего не хватает.</p>
+    </div>
+    <div class="btn-row" id="presets"></div>
+    <div class="builder">
+      <div class="stack">
+        <label class="field">Задача <span class="hint">что нужно получить</span><textarea id="fTask" data-f="task"></textarea></label>
+        <label class="field">Данные <span class="hint">файл, лист, колонки с примерами значений</span><textarea id="fData" data-f="data"></textarea></label>
+        <label class="field">Результат <span class="hint">файл, таблица или график, формат</span><textarea id="fResult" data-f="result"></textarea></label>
+        <label class="field">Правила <span class="hint">бизнес-правила, пропуски, дубликаты</span><textarea id="fRules" data-f="rules"></textarea></label>
+        <label class="field">Ограничения <span class="hint">версия Python, библиотеки, пути</span><textarea id="fLimits" data-f="limits"></textarea></label>
+        <div><div class="panel-title">Проверка промпта</div><div class="quality" id="quality"></div></div>
+      </div>
+      <div class="stack prompt-live">
+        <div class="code-head"><span>готовый промпт</span><span id="promptLen"></span></div>
+        <pre class="prompt-box" id="promptOut"></pre>
+        <div class="btn-row"><button class="btn primary" data-copy="#promptOut">Скопировать промпт</button><button class="btn" id="btnClear">Очистить поля</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="check">
+    <div class="block-head">
+      <span class="tag">Чек-лист</span>
+      <h2>Проверь код от ИИ, прежде чем ему верить</h2>
+      <p>Отмечайте пункты по мере проверки. Отметки сохраняются в этом браузере.</p>
+    </div>
+    <div class="check-bar"><div class="bar"><i id="checkBar" style="width:0"></i></div><span class="cnt" id="checkCnt">0 из 6</span><button class="btn small" id="checkReset">Сбросить</button></div>
+    <div class="checklist" id="checklist"></div>
+  </section>
+
+  <section class="block" id="privacy">
+    <div class="block-head">
+      <span class="tag">Безопасность</span>
+      <h2>Что нельзя отправлять в ИИ</h2>
+      <p>Всё, что вы вставили в чат, уходит на серверы сервиса. Правило простое: отправляем структуру данных, а не сами данные.</p>
+    </div>
+    <div class="never">
+      <div><b>Персональные данные</b><span>ФИО вместе с ИИН, телефонами, адресами, датами рождения</span></div>
+      <div><b>Зарплаты и выплаты</b><span>Оклады, премии, табели, любые суммы по конкретным людям</span></div>
+      <div><b>Реальные производственные показатели</b><span>Фактическая добыча, давление, простои по реальным скважинам и объектам</span></div>
+      <div><b>Коммерческие условия</b><span>Контракты, цены, данные подрядчиков и заказчиков</span></div>
+      <div><b>Пароли и ключи</b><span>Логины, токены, строки подключения к базам</span></div>
+      <div><b>Внутренние документы</b><span>Отчёты с грифом, презентации для руководства, переписка</span></div>
+    </div>
+    <div class="split">
+      <div class="stack">
+        <div class="panel-title">Пример обезличивания (данные выдуманные)</div>
+        <div class="table-wrap"><table class="df" id="anonTable"></table></div>
+        <div class="btn-row"><button class="btn primary" id="btnAnon">Обезличить</button><button class="btn" id="btnAnonReset">Вернуть</button></div>
+        <p class="small" id="anonNote">Красным отмечено то, что нельзя отправлять.</p>
+      </div>
+      <div class="stack">
+        <div class="panel-title">Что отправить вместо файла</div>
+<pre data-hl># 1) структура: имена колонок и типы
+print(df.dtypes)
+
+# 2) пять выдуманных строк того же вида
+sample = df.head(5).copy()
+sample["ФИО"] = [f"Сотрудник {i}" for i in range(1, 6)]
+sample = sample.drop(columns=["ИИН", "Оклад_тг"])
+sample["Нефть_т"] = [500.0, 612.5, 0.0, 480.2, 555.1]
+print(sample.to_string())</pre>
+        <p class="small muted">В промпт вставляем вывод этих двух print и пишем: «данные условные». ИИ этого достаточно, чтобы написать код, который потом запустите на настоящем файле у себя.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block mistake">
+    <div class="block-head">
+      <span class="tag">Типичная ошибка</span>
+      <h2>ИИ придумал колонку, которой нет в файле</h2>
+    </div>
+    <div class="pair">
+      <div><div class="bad-label">Код от ИИ без описания данных</div>
+<pre data-hl>df = pd.read_excel("production.xlsx")
+total = df.groupby("Object")["Oil"].sum()
+# KeyError: 'Object'</pre></div>
+      <div><div class="good-label">После уточнения промпта</div>
+<pre data-hl>df = pd.read_excel(Path("data") / "добыча_2026.xlsx",
+                   sheet_name="Добыча")
+total = df.groupby("Объект")["Нефть_т"].sum()</pre></div>
+    </div>
+    <p>ИИ не видит ваш файл и угадывает имена. Если в промпте нет колонок с примерами значений, он придумает свои. Исправление на шаге 1: перечислите колонки буква в букву, как в Excel. Исправление на шаге 4: замените имена в коде на свои и запустите ещё раз.</p>
+  </section>
+
+  <section class="block ask">
+    <div class="block-head">
+      <span class="tag">Спроси ИИ</span>
+      <h2>Попросите ИИ проверить собственный код</h2>
+    </div>
+<pre class="prompt-box" id="prompt11">Проверь этот код как опытный аналитик, который ищет ошибки перед отправкой отчёта.
+1) Что может сломаться на реальных данных: пропуски, текст вместо чисел, лишние пробелы, дубликаты, пустой лист.
+2) Где результат может быть неверным без всякой ошибки (например, сумма по неочищенным названиям).
+3) Какие проверки добавить: число строк до и после, количество пропусков, сверка итога.
+Ответь списком, затем покажи исправленный код с комментариями на русском.
+
+&lt;вставьте код&gt;</pre>
+    <div class="btn-row"><button class="btn primary" data-copy="#prompt11">Скопировать промпт</button></div>
+  </section>
+</main>
+
+<nav id="pager"></nav>
+<p class="foot-note">Данные условные, названия объектов вымышлены. Тренинг «Python-аналитика с ИИ», EY.</p>
+
+<script src="app.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+
+  /* ---------- цикл ---------- */
+  var STEPS = [
+    { t: "Сформулировать", d: "цель, данные, результат, ограничения",
+      what: "Опишите задачу так, как объяснили бы новому сотруднику: какой файл, какие колонки и что в них лежит, что должно получиться и в каком виде. Добавьте правила и ограничения.",
+      tip: "Если сами не можете сказать, какой результат ждёте, ИИ тоже не сможет. Сначала нарисуйте итоговую таблицу на бумаге или в Excel.",
+      ex: "Задача: сумма нефти по объектам за май.\nДанные: data/добыча_2026.xlsx, лист Добыча, колонки Дата, Объект (\"КТЛ-1\"), Нефть_т (531.4)." },
+    { t: "Получить", d: "код и объяснение от ИИ",
+      what: "Вставьте промпт в ИИ-ассистент в VS Code (Codex, Copilot, Cursor: кнопки похожие) или в ChatGPT в браузере. Попросите объяснение по шагам вместе с кодом.",
+      tip: "Не просите сразу весь отчёт. Лучше три маленьких запроса: загрузка и проверка, очистка, расчёт. Каждый шаг проще проверить.",
+      ex: "Объясни код по шагам, как новичку.\nНе используй библиотеки, кроме pandas и openpyxl." },
+    { t: "Прочитать и проверить", d: "запустить, посмотреть ошибки, сверить с Excel",
+      what: "Прочитайте код до запуска и предскажите, что он напечатает. Запустите на копии данных. Если упал, читайте traceback снизу вверх. Если не упал, сверьте 2-3 числа с Excel.",
+      tip: "Самые опасные ошибки те, где скрипт не падает, а считает неправильно. Сверка итога с Excel обязательна.",
+      ex: "print(len(df))            # сколько строк\nprint(df[\"Нефть_т\"].isna().sum())  # сколько пропусков\nprint(summary.loc[\"ЗВП\"])  # сверить с Excel" },
+    { t: "Адаптировать", d: "свои колонки, пути, правила",
+      what: "Замените в коде имена колонок, листов и путей на свои. Перенесите настройки в начало файла. Сохраните рабочую версию и промпт, чтобы повторить в следующем месяце.",
+      tip: "Хорошая адаптация: все пути и имена в одном месте вверху файла. Тогда на новых данных меняется одна строка.",
+      ex: "DATA_FILE = Path(\"data\") / \"добыча_2026_обновление.xlsx\"\nSHEET = \"Добыча\"\nMONTH = 6" }
+  ];
+  var curNode = 0, cycTimer = null;
+  $("nodes").innerHTML = STEPS.map(function (s, i) { return '<button class="node" data-n="' + i + '"><span class="num">' + (i + 1) + '</span><span class="nt">' + s.t + '</span><span class="nd">' + s.d + "</span></button>"; }).join("");
+  function showNode(i) {
+    curNode = i;
+    document.querySelectorAll(".node").forEach(function (n, k) { n.classList.toggle("is-on", k === i); });
+    var s = STEPS[i];
+    $("nodeDetail").innerHTML = '<div class="node-detail"><div class="stack"><h3>Шаг ' + (i + 1) + ". " + s.t + "</h3><p>" + s.what + '</p><p class="note">' + s.tip + '</p></div><pre class="code" id="nodeCode"></pre></div>';
+    EY.renderCode($("nodeCode"), s.ex);
+  }
+  document.querySelectorAll(".node").forEach(function (n) { n.addEventListener("click", function () { if (cycTimer) { clearInterval(cycTimer); cycTimer = null; $("btnCycle").textContent = "Проиграть цикл"; } showNode(+n.getAttribute("data-n")); }); });
+  $("btnCycle").addEventListener("click", function () {
+    if (cycTimer) { clearInterval(cycTimer); cycTimer = null; this.textContent = "Проиграть цикл"; return; }
+    this.textContent = "Остановить";
+    var k = 0; showNode(0);
+    cycTimer = setInterval(function () { k = (k + 1) % 4; showNode(k); }, 2600);
+  });
+  showNode(0);
+
+  /* ---------- конструктор ---------- */
+  var PRESETS = [
+    { name: "Очистка листа Добыча", task: "очистить данные о добыче и посчитать сумму нефти по объектам за каждый месяц", data: "файл data/добыча_2026.xlsx, лист Добыча, колонки: Дата (2026-01-01 или текст \"05.03.2026\"), Объект (\"КТЛ-1\", \" ЗВП \", \"зсг\"), Скважина (\"T-101\"), Нефть_т (531.4 или текст \"1 234,5\"), Простой_ч (0, 6). Данные условные", result: "таблица Объект × Месяц с суммой Нефть_т, сохранить в результаты/сводка.xlsx, лист По_объектам", rules: "Объект через strip и upper; Нефть_т убрать пробелы, запятую на точку, pd.to_numeric(errors=\"coerce\"); удалить полные дубликаты; пропуски нефти не заполнять нулями, показать их количество", limits: "Python 3.14, pandas, openpyxl, пути относительные через pathlib, комментарии на русском, без лишних библиотек" },
+    { name: "Факт против плана", task: "сравнить фактическую добычу нефти по объектам за месяц с планом, посчитать отклонение в тоннах и процентах", data: "файл data/добыча_2026.xlsx: лист Добыча (Дата, Объект, Нефть_т) и лист План (Объект \"КТЛ-1\", Месяц 1..5, План_нефть_т 16000). Данные условные, лист Добыча уже очищен", result: "таблица Объект, Месяц, Факт_т, План_т, Отклонение_т, Отклонение_проц, округлить до 1 знака; сохранить в результаты/факт_план.xlsx", rules: "месяц брать из колонки Дата; объединять через merge по Объект и Месяц; если плана нет, оставить пусто и вывести предупреждение", limits: "Python 3.14, pandas, openpyxl, пути относительные через pathlib, комментарии на русском, без лишних библиотек" },
+    { name: "График динамики", task: "построить линейный график суммарной добычи нефти по дням для каждого объекта", data: "DataFrame df из листа Добыча, уже очищен: Дата (datetime), Объект (4 значения: КТЛ-1, КТЛ-2, ЗВП, ЗСГ), Нефть_т (float). Данные условные", result: "PNG 1600×900 в результаты/динамика.png, подписи осей на русском, легенда, заголовок «Добыча нефти, т/сутки»", rules: "по оси X даты, одна линия на объект; пропуски не соединять линией", limits: "Python 3.14, pandas и matplotlib, без seaborn, пути через pathlib, комментарии на русском" },
+    { name: "Договоры из заявок", task: "по каждой готовой заявке подрядчика сделать договор Word по шаблону и сохранить реестр договоров", data: "файл data/договоры_2026.xlsx, лист Заявки, колонки: Номер (1), Дата (24.09.2026), Подрядчик (ТОО «КазСервис»), БИН (051140012345, 12 цифр, бывает ведущий ноль), Объект (КТЛ-1), Услуга, Ставка_тг_ч (12500 или текст \"12 500\"), Часы (120). Шаблон data/шаблон_договора.docx с полями {{ Подрядчик }}, {{ БИН }}, {{ Сумма }}. Данные условные", result: "договоры в результаты/договоры/ и Excel результаты/реестр_договоров.xlsx с листами Договоры, По_объектам, Контроль_качества", rules: "БИН читать как текст; пропуски Номер, БИН, Часы не заполнять, такие заявки пометить «на доработку»; сумма = ставка × часы, НДС 16%; готовые договоры не перезаписывать", limits: "Python 3.14, pandas 3, openpyxl, docxtpl, пути относительные через pathlib, комментарии на русском, без лишних библиотек" }
+  ];
+  var FIELDS = [["task", "fTask"], ["data", "fData"], ["result", "fResult"], ["rules", "fRules"], ["limits", "fLimits"]];
+  $("presets").innerHTML = '<span class="small muted">Примеры:</span>' + PRESETS.map(function (p, i) { return '<button class="chip-btn" data-p="' + i + '">' + EY.esc(p.name) + "</button>"; }).join("");
+  function grow(el) { el.style.height = "auto"; el.style.height = (el.scrollHeight + 4) + "px"; }
+  function fill(p) { FIELDS.forEach(function (f) { $(f[1]).value = p[f[0]]; grow($(f[1])); }); build(); }
+  function val(id) { return $(id).value.trim().replace(/[.\s]+$/, ""); }
+  function build() {
+    var v = {}; FIELDS.forEach(function (f) { v[f[0]] = val(f[1]); });
+    function part(label, text, ph) { return label + ": " + (text || "<" + ph + ">") + "."; }
+    var txt = [
+      part("Задача", v.task, "что нужно получить"),
+      part("Данные", v.data, "файл, лист, колонки с примерами значений"),
+      part("Результат", v.result, "файл/таблица/график, формат"),
+      part("Правила", v.rules, "бизнес-правила, как обрабатывать пропуски и дубликаты"),
+      part("Ограничения", v.limits, "Python 3.14, pandas, пути через pathlib"),
+      "Объясни код по шагам, как новичку."
+    ].join("\n");
+    $("promptOut").textContent = txt;
+    $("promptLen").textContent = txt.length + " символов";
+    var all = FIELDS.map(function (f) { return $(f[1]).value; }).join(" ");
+    var CHECKS = [
+      ["задача", !!v.task],
+      ["имя файла", /\.(xlsx|xls|csv|json)\b/i.test(all) || /DataFrame/.test(all)],
+      ["колонки с примерами", /\(.*\d.*\)|\(".*"\)/.test(v.data)],
+      ["формат результата", !!v.result],
+      ["что делать с пропусками", /пропуск|NaN|пуст/i.test(all)],
+      ["относительные пути", /pathlib|относительн/i.test(all)],
+      ["пометка «данные условные»", /условн/i.test(all)]
+    ];
+    $("quality").innerHTML = CHECKS.map(function (c) { return '<span class="q' + (c[1] ? " ok" : "") + '">' + c[0] + "</span>"; }).join("");
+  }
+  document.querySelectorAll("[data-p]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      document.querySelectorAll("[data-p]").forEach(function (x) { x.classList.toggle("is-on", x === b); });
+      fill(PRESETS[+b.getAttribute("data-p")]);
+    });
+  });
+  FIELDS.forEach(function (f) { $(f[1]).addEventListener("input", function () { grow(this); build(); }); });
+  $("btnClear").addEventListener("click", function () { FIELDS.forEach(function (f) { $(f[1]).value = ""; }); document.querySelectorAll("[data-p]").forEach(function (x) { x.classList.remove("is-on"); }); build(); });
+  document.querySelector('[data-p="0"]').classList.add("is-on");
+  fill(PRESETS[0]);
+
+  /* ---------- чек-лист ---------- */
+  var CHECK = [
+    ["Запустил на копии данных, скрипт отработал без ошибок", "Исходный файл не трогаем. Работаем с копией в папке data."],
+    ["Сверил 2-3 итоговых числа с Excel", "Например, сумму нефти по одному объекту за один месяц через фильтр или сводную."],
+    ["Проверил число строк и пропусков до и после очистки", "len(df) и df.isna().sum(). Строки не должны пропадать без причины."],
+    ["Имена колонок, листов и пути совпадают с моим файлом", "Пути относительные, через pathlib. Никаких C:\\Users\\... внутри кода."],
+    ["В коде нет лишних библиотек и обращений в интернет", "Только то, что просили: pandas, openpyxl, matplotlib."],
+    ["Понимаю каждую строку или попросил ИИ объяснить непонятные", "Промпт: «объясни строки 12-20, как новичку»."]
+  ];
+  var KEY = "ey_ai_checklist_v1", state = [];
+  try { state = JSON.parse(localStorage.getItem(KEY) || "[]"); } catch (e) { state = []; }
+  function saveState() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* хранилище недоступно */ } }
+  function renderCheck() {
+    $("checklist").innerHTML = CHECK.map(function (c, i) {
+      var on = !!state[i];
+      return '<label class="check' + (on ? " done" : "") + '" for="chk' + i + '"><input type="checkbox" id="chk' + i + '"' + (on ? " checked" : "") + '><span><b>' + EY.esc(c[0]) + '</b><span class="d">' + EY.esc(c[1]) + "</span></span></label>";
+    }).join("");
+    var n = state.filter(Boolean).length;
+    $("checkCnt").textContent = n + " из " + CHECK.length;
+    $("checkBar").style.width = (n / CHECK.length * 100) + "%";
+    CHECK.forEach(function (_, i) { $("chk" + i).addEventListener("change", function () { state[i] = this.checked; saveState(); renderCheck(); }); });
+  }
+  $("checkReset").addEventListener("click", function () { state = []; saveState(); renderCheck(); });
+  renderCheck();
+
+  /* ---------- обезличивание ---------- */
+  var ROWS = [
+    ["Касымов Ерлан", "880315300217", "1 150 000", "T-101", "5 432,1"],
+    ["Жумабаева Алия", "910722400528", "980 000", "T-203", "0,0"],
+    ["Петров Игорь", "850109300744", "1 320 000", "T-301", "6 118,4"]
+  ];
+  var HEAD = ["ФИО", "ИИН", "Оклад_тг", "Скважина", "Нефть_т"];
+  function anon(done) {
+    var h = "<thead><tr>" + HEAD.map(function (c, i) { return '<th class="' + (done && (i === 1 || i === 2) ? "dropped" : "") + '">' + c + "</th>"; }).join("") + "</tr></thead><tbody>";
+    h += ROWS.map(function (r, k) {
+      return "<tr>" + r.map(function (v, i) {
+        var cls = "", t = v;
+        if (!done && i !== 3) cls = "secret";
+        if (done) {
+          if (i === 0) { t = "Сотрудник " + (k + 1); cls = "masked"; }
+          if (i === 1 || i === 2) { cls = "dropped"; }
+          if (i === 3) { t = ["T-1", "T-2", "T-3"][k]; cls = "masked"; }
+          if (i === 4) { t = ["500,0", "0,0", "612,5"][k]; cls = "masked"; }
+        }
+        return '<td class="' + cls + (i >= 2 && i !== 3 ? " num" : "") + '">' + EY.esc(t) + "</td>";
+      }).join("") + "</tr>";
+    }).join("") + "</tbody>";
+    $("anonTable").innerHTML = h;
+    $("anonNote").innerHTML = done ? "ФИО заменили на «Сотрудник N», колонки ИИН и Оклад_тг удалили, скважины переименовали, добычу заменили условными числами. Структура та же, реальных данных нет." : "Красным отмечено то, что нельзя отправлять: ФИО, ИИН, оклад и фактическая добыча.";
+  }
+  $("btnAnon").addEventListener("click", function () { anon(true); });
+  $("btnAnonReset").addEventListener("click", function () { anon(false); });
+  anon(false);
+})();
+</script>
+</body>
+</html>

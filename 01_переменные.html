@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Переменные в Python</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Onest:wght@400;500;600;700&family=Unbounded:wght@500;700&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%22-13 0 1195 1195%22%3E%3Cstyle%3E.l%7Bfill:%232E2E38%7D%40media %28prefers-color-scheme:dark%29%7B.l%7Bfill:%23fff%7D%7D%3C/style%3E%3Cpath fill=%22%23FFE600%22 d=%22M0 427 1168 0v220z%22/%3E%3Cpath class=%22l%22 d=%22M10 604h335l79 136H187v97h214v124H187v97h296v136H10zM401 604h195l101 192 100-192h193L784 961v233H607V961z%22/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<style>
+  .sim { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 24px; align-items: start; }
+  @media (max-width: 900px) { .sim { grid-template-columns: 1fr; } }
+  #editor { min-height: 290px; font-size: 1rem; line-height: 1.65; background: var(--code-bg); color: var(--code-fg); border-color: var(--code-bg); padding: 18px 22px; }
+  #editor:focus { box-shadow: 0 0 0 3px var(--yellow); }
+  #codeView { min-height: 290px; font-size: 1rem; }
+  .memory { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 22px 24px 26px; display: grid; gap: 18px; }
+  .memory .boxes { min-height: 170px; align-content: flex-end; padding: 14px; border-radius: 8px;
+    background: repeating-linear-gradient(0deg, transparent 0 34px, var(--line-2) 34px 35px); }
+  .empty-mem { color: var(--muted); font-size: 0.95rem; align-self: center; }
+  .explain { min-height: 92px; background: var(--yellow-wash); border-radius: 8px; padding: 14px 18px; font-size: 1.02rem; }
+  .explain b { font-family: var(--f-mono); }
+  .step-count { font-family: var(--f-mono); font-size: 0.8rem; color: var(--muted); margin-left: auto; }
+  .types td:first-child, .types td:last-child { font-family: var(--f-mono); }
+  .presets { display: flex; gap: 8px; flex-wrap: wrap; }
+</style>
+</head>
+<body data-page="1">
+<header id="site-header"></header>
+
+<main class="wrap">
+  <div class="hero">
+    <div class="eyebrow"><span class="pill">Тема 1</span><span>День 1 · Python минимум для чтения кода</span></div>
+    <h1>Переменные</h1>
+    <p class="lead">Переменная (variable) это имя, под которым Python хранит значение в памяти. Пишем <code>oil = 1650</code>, и Python запоминает число 1650 под именем <code>oil</code>. Дальше в коде можно писать <code>oil</code> вместо числа.</p>
+    <div class="metaphor">
+      <span class="m-label">Метафора</span>
+      <p>Переменная это <b>коробка с этикеткой</b>. Этикетка это имя, внутри лежит значение. Если написать <code>oil = 1720</code>, этикетка останется та же, а содержимое поменяется: старое 1650 выбросили, положили 1720.</p>
+    </div>
+  </div>
+
+  <section class="block" id="sim">
+    <div class="block-head">
+      <span class="tag">Интерактив</span>
+      <h2>Симулятор памяти</h2>
+      <p>Сначала угадайте: что будет лежать в коробках <code>a</code> и <code>b</code> после последней строки? Потом нажмите «Выполнить по шагам». Код слева можно менять.</p>
+    </div>
+
+    <div class="sim">
+      <div class="stack">
+        <div class="code-head"><span>otchet.py</span><span id="modeLabel">можно редактировать</span></div>
+        <textarea id="editor" class="mono" spellcheck="false" aria-label="Код для выполнения"></textarea>
+        <pre id="codeView" class="code numbers" hidden></pre>
+        <div class="btn-row">
+          <button class="btn primary" id="btnRun">Выполнить по шагам</button>
+          <button class="btn" id="btnNext" disabled>Следующий шаг</button>
+          <button class="btn" id="btnAll" disabled>До конца</button>
+          <button class="btn" id="btnEdit" disabled>Изменить код</button>
+          <span class="step-count" id="stepCount"></span>
+        </div>
+        <div class="presets" aria-label="Готовые примеры">
+          <span class="small muted">Примеры:</span>
+          <button class="chip-btn" data-preset="0">обмен a, b</button>
+          <button class="chip-btn" data-preset="1">расчёт добычи</button>
+          <button class="chip-btn" data-preset="2">ошибка в имени</button>
+        </div>
+      </div>
+
+      <div class="memory">
+        <div class="panel-title">Память Python</div>
+        <div class="boxes" id="boxes"><span class="empty-mem">Коробок пока нет. Они появятся, когда Python выполнит строку с «=».</span></div>
+        <div class="explain" id="explain">Нажмите «Выполнить по шагам». Жёлтая полоса слева покажет строку, которую Python выполняет сейчас.</div>
+        <div>
+          <div class="panel-title">Панель type(): что за предмет в коробке</div>
+          <div class="table-wrap">
+            <table class="t types"><thead><tr><th>Команда</th><th>Значение</th><th>Python ответит</th></tr></thead>
+              <tbody id="typeRows"><tr><td colspan="3" class="muted" style="font-family:var(--f-body)">Пусто</td></tr></tbody></table>
+          </div>
+        </div>
+        <div>
+          <div class="panel-title">Вывод на экран (print)</div>
+          <div class="console" id="out"><span class="c-muted">Здесь появится то, что печатает print().</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <span class="tag">Как это выглядит в коде</span>
+      <h2>Имя, знак «=», значение</h2>
+      <p>Знак <code>=</code> в Python значит «положи в коробку», а не «равно». Справа то, что кладём. Слева этикетка.</p>
+    </div>
+    <div class="grid-2">
+      <pre data-hl># Добыча нефти за сутки по скважине, тонн
+oil = 1650
+well = "T-101"          # текст всегда в кавычках
+pressure = 78.5          # дробная часть через точку
+is_injector = False      # да/нет
+
+oil = oil + 70           # взяли 1650, прибавили 70, положили обратно
+print(well, oil)         # T-101 1720</pre>
+      <div class="stack">
+        <p><b>Как читать строку <code>oil = oil + 70</code>.</b> Python сначала считает правую часть: берёт из коробки 1650, прибавляет 70. Потом кладёт 1720 в ту же коробку.</p>
+        <p><b>Правила имён.</b> Латинские буквы, цифры и <code>_</code>. Не начинать с цифры. Большие и маленькие буквы различаются: <code>oil</code> и <code>Oil</code> это две разные коробки.</p>
+        <p><b>Хорошие имена</b> говорят, что внутри: <code>oil_by_object</code>, <code>total_downtime</code>. Плохие: <code>x</code>, <code>a1</code>, <code>data2</code>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block mistake">
+    <div class="block-head">
+      <span class="tag">Типичная ошибка</span>
+      <h2>Текст без кавычек и опечатка в имени</h2>
+    </div>
+    <div class="pair">
+      <div><div class="bad-label">Так падает</div>
+<pre data-hl>well = T-101
+print(Oil)</pre>
+<p class="small" style="margin-top:8px"><code>NameError: name 'T' is not defined</code>. Без кавычек Python думает, что <code>T</code> это имя коробки, и ищет её. С <code>Oil</code> то же самое: такой коробки нет, есть <code>oil</code>.</p></div>
+      <div><div class="good-label">Так работает</div>
+<pre data-hl>well = "T-101"
+print(oil)</pre>
+<p class="small" style="margin-top:8px">Текст в кавычках. Имя написано так же, как при создании, буква в букву.</p></div>
+    </div>
+  </section>
+
+  <section class="block ask">
+    <div class="block-head">
+      <span class="tag">Спроси ИИ</span>
+      <h2>Попросите ИИ разложить код по коробкам</h2>
+      <p>Вставьте свой код вместо примера. Так вы проверите, правильно ли понимаете, что происходит.</p>
+    </div>
+<pre class="prompt-box" id="prompt1">Объясни, как учитель новичку, что лежит в каждой переменной после каждой строки этого кода.
+Сделай таблицу: номер строки, имя переменной, значение, тип (int, float, str, bool).
+Отдельно отметь строки, где значение переменной заменяется.
+
+oil = 1650
+oil = oil + 70
+well = "T-101"
+a = oil
+b = well
+a, b = b, a</pre>
+    <div class="btn-row"><button class="btn primary" data-copy="#prompt1">Скопировать промпт</button></div>
+  </section>
+</main>
+
+<nav id="pager"></nav>
+<p class="foot-note">Данные условные, названия объектов вымышлены. Тренинг «Python-аналитика с ИИ», EY.</p>
+
+<script src="app.js"></script>
+<script>
+(function () {
+  var py = EY.py;
+  var PRESETS = [
+    'oil = 1650\noil = 1720\nwell = "T-101"\npressure = 78.5\na = oil\nb = well\na, b = b, a\nprint(a, b)',
+    'oil_day = 1650\nshifts = 2\noil_shift = oil_day / shifts\ndowntime = 0\ndowntime = downtime + 6\nis_ok = downtime < 8\nprint("За смену:", oil_shift)',
+    'oil_total = 1720\nwell = "T-101"\nprint(oil_totl)'
+  ];
+  var editor = document.getElementById("editor");
+  var view = document.getElementById("codeView");
+  var boxesEl = document.getElementById("boxes");
+  var explain = document.getElementById("explain");
+  var outEl = document.getElementById("out");
+  var typeRows = document.getElementById("typeRows");
+  var btnRun = document.getElementById("btnRun"), btnNext = document.getElementById("btnNext");
+  var btnAll = document.getElementById("btnAll"), btnEdit = document.getElementById("btnEdit");
+  var stepCount = document.getElementById("stepCount");
+  var modeLabel = document.getElementById("modeLabel");
+
+  editor.value = PRESETS[0];
+  var lines = [], pc = 0, env = {}, order = [], out = [], executed = [], halted = false;
+
+  function typeClass(v) { return "t-" + (v.t === "NoneType" ? "none" : v.t); }
+  function short(v) { var r = py.repr(v); return r.length > 22 ? r.slice(0, 20) + "…" : r; }
+
+  function renderBoxes(changed, olds) {
+    if (!order.length) { boxesEl.innerHTML = '<span class="empty-mem">Коробок пока нет. Они появятся, когда Python выполнит строку с «=».</span>'; return; }
+    boxesEl.innerHTML = order.map(function (name) {
+      var v = env[name];
+      var cls = "vbox", valCls = "v-val", oldHtml = "", was = "";
+      if (changed && changed.indexOf(name) >= 0) {
+        var o = olds[changed.indexOf(name)];
+        valCls += " drop";
+        if (o === undefined) cls += " new";
+        else { cls += " flash"; oldHtml = '<span class="v-old">' + EY.esc(short(o)) + "</span>"; was = " · было " + EY.esc(short(o)); }
+      }
+      return '<div class="' + cls + '"><div class="v-label">' + EY.esc(name) +
+        '</div><div class="v-body ' + typeClass(v) + '">' + oldHtml + '<span class="' + valCls + '">' + EY.esc(short(v)) + '</span></div><div class="v-type">' + py.tname(v) + was + "</div></div>";
+    }).join("");
+  }
+  function renderTypes() {
+    if (!order.length) { typeRows.innerHTML = '<tr><td colspan="3" class="muted" style="font-family:var(--f-body)">Пусто</td></tr>'; return; }
+    typeRows.innerHTML = order.map(function (n) {
+      var v = env[n];
+      return "<tr><td>type(" + EY.esc(n) + ')</td><td class="' + typeClass(v) + '" style="font-family:var(--f-mono)">' + EY.esc(short(v)) + "</td><td>&lt;class '" + py.tname(v) + "'&gt;</td></tr>";
+    }).join("");
+  }
+  function renderOut(err) {
+    if (!out.length && !err) { outEl.innerHTML = '<span class="c-muted">Здесь появится то, что печатает print().</span>'; return; }
+    outEl.innerHTML = out.map(EY.esc).join("\n") + (err ? (out.length ? "\n" : "") + '<span class="c-err">' + EY.esc(err) + "</span>" : "");
+  }
+
+  var HINTS = {
+    NameError: "Python не нашёл коробку с таким именем. Проверьте опечатку, большие и маленькие буквы, и создана ли переменная выше.",
+    TypeError: "Операция не подходит для этих типов. Например, текст и число нельзя сложить. Смотрите страницу «Типы данных».",
+    SyntaxError: "Python не понял запись. Проверьте кавычки, скобки и запятые.",
+    ValueError: "Тип подходит, а значение нет. Например, int(\"нефть\") не превратить в число.",
+    ZeroDivisionError: "Деление на ноль."
+  };
+
+  function describe(res, src) {
+    var names = res.names;
+    if (res.kind === "skip") return "Пустая строка или комментарий. Python её пропускает.";
+    if (res.kind === "expr") {
+      if (res.printed && res.printed.length) return "<b>print</b> показывает содержимое коробок на экране. Сами коробки не меняются.";
+      return "Python посчитал выражение, но никуда его не положил. Результат потерян.";
+    }
+    if (names.length > 1) {
+      return "Сначала Python читает правую часть целиком: " + names.map(function (n, i) { return "<b>" + EY.esc(py.repr(res.values[i])) + "</b>"; }).join(", ") +
+        ". Потом раскладывает по коробкам слева: " + names.map(function (n, i) { return "<b>" + EY.esc(n) + "</b> получает " + EY.esc(py.repr(res.values[i])); }).join(", ") +
+        ". Так значения меняются местами без третьей коробки.";
+    }
+    var n = names[0], v = res.values[0], o = res.old[0];
+    var rhs = src.split("=").slice(1).join("=").trim().replace(/#.*$/, "").trim();
+    var fromName = /^[A-Za-z_][\w]*$/.test(rhs) && rhs !== "True" && rhs !== "False" && rhs !== "None";
+    if (o === undefined) {
+      if (fromName) return "Создали коробку <b>" + EY.esc(n) + "</b> и положили в неё то же, что лежит в <b>" + EY.esc(rhs) + "</b>: " + EY.esc(py.repr(v)) + ". Коробка " + EY.esc(rhs) + " не изменилась.";
+      return "Создали коробку <b>" + EY.esc(n) + "</b> и положили в неё <b>" + EY.esc(py.repr(v)) + "</b>. Тип: " + py.tname(v) + ".";
+    }
+    return "Коробка <b>" + EY.esc(n) + "</b> уже есть. Выбросили старое " + EY.esc(py.repr(o)) + ", положили <b>" + EY.esc(py.repr(v)) + "</b>. Этикетка та же.";
+  }
+
+  function step() {
+    if (halted || pc >= lines.length) return;
+    var src = lines[pc];
+    var cur = pc;
+    EY.setActive(view, cur, executed);
+    try {
+      var res = py.execLine(src, env, out);
+      if (res.kind === "assign") {
+        res.names.forEach(function (nm) { if (order.indexOf(nm) < 0) order.push(nm); });
+        renderBoxes(res.names, res.old);
+      } else renderBoxes();
+      renderTypes();
+      renderOut();
+      explain.innerHTML = describe(res, src);
+      executed.push(cur);
+      pc++;
+    } catch (e) {
+      if (!(e instanceof py.PyError)) throw e;
+      halted = true;
+      renderOut(e.toString());
+      explain.innerHTML = '<span style="color:var(--red);font-weight:600">Строка ' + (cur + 1) + ". " + EY.esc(e.toString()) + "</span><br>" + (HINTS[e.type] || "");
+    }
+    // пропускаем пустые строки сразу
+    while (!halted && pc < lines.length && !lines[pc].replace(/#.*$/, "").trim()) { executed.push(pc); pc++; }
+    var finished = halted || pc >= lines.length;
+    btnNext.disabled = finished; btnAll.disabled = finished;
+    stepCount.textContent = halted ? "остановлено на ошибке" : (finished ? "готово, выполнено строк: " + executed.length : "шаг " + executed.length + " из " + lines.length);
+    if (finished && !halted) { EY.setActive(view, -1, executed); if (!/Коробка|Создали|Сначала|print/.test(explain.textContent)) {} }
+  }
+
+  function start() {
+    lines = editor.value.replace(/\t/g, "    ").split("\n");
+    while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
+    env = {}; order = []; out = []; executed = []; pc = 0; halted = false;
+    EY.renderCode(view, lines.join("\n"));
+    editor.hidden = true; view.hidden = false;
+    modeLabel.textContent = "выполняется, редактирование выключено";
+    btnRun.textContent = "Сначала";
+    btnEdit.disabled = false;
+    renderBoxes(); renderTypes(); renderOut();
+    step();
+  }
+
+  btnRun.addEventListener("click", start);
+  btnNext.addEventListener("click", step);
+  btnAll.addEventListener("click", function () { var guard = 0; while (!btnNext.disabled && guard++ < 200) step(); });
+  btnEdit.addEventListener("click", function () {
+    editor.hidden = false; view.hidden = true; btnRun.textContent = "Выполнить по шагам";
+    btnNext.disabled = true; btnAll.disabled = true; btnEdit.disabled = true; stepCount.textContent = "";
+    modeLabel.textContent = "можно редактировать"; editor.focus();
+  });
+  document.querySelectorAll("[data-preset]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      editor.value = PRESETS[+b.getAttribute("data-preset")];
+      btnEdit.click(); start();
+    });
+  });
+  editor.addEventListener("keydown", function (e) {
+    if (e.key === "Tab") { e.preventDefault(); var s = editor.selectionStart; editor.setRangeText("    ", s, editor.selectionEnd, "end"); }
+  });
+})();
+</script>
+</body>
+</html>

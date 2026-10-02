@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Условия и циклы</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Onest:wght@400;500;600;700&family=Unbounded:wght@500;700&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%22-13 0 1195 1195%22%3E%3Cstyle%3E.l%7Bfill:%232E2E38%7D%40media %28prefers-color-scheme:dark%29%7B.l%7Bfill:%23fff%7D%7D%3C/style%3E%3Cpath fill=%22%23FFE600%22 d=%22M0 427 1168 0v220z%22/%3E%3Cpath class=%22l%22 d=%22M10 604h335l79 136H187v97h214v124H187v97h296v136H10zM401 604h195l101 192 100-192h193L784 961v233H607V961z%22/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<style>
+  .press-top { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; }
+  .press-val { font-family: var(--f-display); font-weight: 700; font-size: 3rem; line-height: 1; font-variant-numeric: tabular-nums; }
+  .press-unit { font-size: 1.1rem; color: var(--muted); }
+  .scale { display: flex; justify-content: space-between; font-family: var(--f-mono); font-size: 0.78rem; color: var(--muted); }
+  .conds { display: grid; gap: 8px; }
+  .cond { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; font-family: var(--f-mono); font-size: 0.92rem; padding: 10px 14px; border-radius: 8px; background: var(--line-2); transition: background 0.3s ease, opacity 0.3s ease; }
+  .cond .v { font-weight: 700; }
+  .cond.true { background: var(--yellow); }
+  .cond.false .v { color: var(--red); }
+  .cond.skip { opacity: 0.4; }
+  .road svg { width: 100%; height: auto; display: block; }
+  .road .path { fill: none; stroke: #D2D2DA; stroke-width: 16; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.35s ease; }
+  .road .path.on { stroke: var(--yellow); }
+  .road .dash { fill: none; stroke: #fff; stroke-width: 2; stroke-dasharray: 8 10; }
+  .road .fork { fill: var(--ink); }
+  .road text { font-family: var(--f-body); font-size: 15px; fill: var(--ink); }
+  .road .ftext { font-family: var(--f-mono); font-size: 13px; fill: #fff; }
+  .road .dest { fill: var(--surface); stroke: #D2D2DA; stroke-width: 2; transition: stroke 0.35s ease, fill 0.35s ease; }
+  .road .dest.on { stroke: var(--ink); fill: var(--yellow); }
+  .road .car { fill: var(--ink); }
+  .result-big { font-size: 1.25rem; font-weight: 700; padding: 14px 18px; border-radius: 8px; background: var(--yellow); display: inline-block; animation: pop 0.35s ease; }
+  .loop-grid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 24px; align-items: start; }
+  @media (max-width: 900px) { .loop-grid { grid-template-columns: 1fr; } }
+  .iter { font-family: var(--f-mono); font-size: 0.85rem; color: var(--muted); }
+  .cell .slot { font-size: 1rem; }
+  .cell .ptr { height: 26px; font-size: 1.2rem; line-height: 26px; color: var(--ink); visibility: hidden; }
+  .cell.is-cur .ptr { visibility: visible; animation: bob 0.8s ease infinite alternate; }
+  @keyframes bob { from { transform: translateY(0); } to { transform: translateY(-4px); } }
+  .flood { max-height: 260px; }
+  .flood-meter { display: flex; gap: 16px; align-items: center; font-family: var(--f-mono); font-size: 0.9rem; flex-wrap: wrap; }
+  .flood-meter .count { font-weight: 700; font-size: 1.2rem; color: var(--red); font-variant-numeric: tabular-nums; }
+  .ctrlc { font-family: var(--f-mono); font-size: 1rem; }
+  .ctrlc.pulse { animation: pulse 0.9s ease infinite; }
+  @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(200,55,45,0.5); } 50% { box-shadow: 0 0 0 10px rgba(200,55,45,0); } }
+  .sub-h { font-family: var(--f-display); font-weight: 500; font-size: 1.1rem; }
+  .letter { font-family: var(--f-mono); background: var(--ink); color: var(--yellow); border-radius: 4px; padding: 1px 8px; margin-right: 10px; font-size: 0.9em; }
+</style>
+</head>
+<body data-page="4">
+<header id="site-header"></header>
+
+<main class="wrap">
+  <div class="hero">
+    <div class="eyebrow"><span class="pill">Тема 4</span><span>День 1 · Python минимум для чтения кода</span></div>
+    <h1>Условия и циклы</h1>
+    <p class="lead">Условие (<code>if</code>) выбирает, какой кусок кода выполнить. Цикл (<code>for</code>, <code>while</code>) повторяет кусок кода много раз. Вместе они заменяют ручную работу: проверить давление на 1 837 строках, пройти по всем скважинам.</p>
+    <div class="metaphor">
+      <span class="m-label">Метафора</span>
+      <p><code>if/elif/else</code> это <b>развилка на дороге</b>: Python проверяет таблички по очереди и едет по первой, где написано «верно». Цикл <code>for</code> это <b>обход полки</b> ячейка за ячейкой. <code>while</code> это «повторяй, пока условие верно».</p>
+    </div>
+  </div>
+
+  <section class="block" id="ifs">
+    <div class="block-head">
+      <span class="tag">Интерактив А</span>
+      <h2>Развилка по давлению</h2>
+      <p>Двигайте ползунок. Python проверяет условия сверху вниз и останавливается на первом верном. Остальные ветки даже не читает.</p>
+    </div>
+    <div class="split">
+      <div class="stack">
+        <div class="panel stack">
+          <div class="press-top"><span class="press-val" id="pVal">78</span><span class="press-unit">бар, давление на скважине T-101</span></div>
+          <input type="range" id="pSlider" min="50" max="120" value="78" aria-label="Давление, бар">
+          <div class="scale"><span>50</span><span>60</span><span>70</span><span>80</span><span>90</span><span>100</span><span>110</span><span>120</span></div>
+          <div class="conds" id="conds"></div>
+        </div>
+        <pre class="code numbers" id="ifCode"></pre>
+      </div>
+      <div class="panel stack">
+        <div class="road" id="road"></div>
+        <div>Результат: <span class="result-big" id="ifRes"></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="forloop">
+    <div class="block-head">
+      <span class="tag">Интерактив Б</span>
+      <h2>Цикл for: обходим полку скважин</h2>
+      <p>Каждый шаг выполняет одну строку. Переменная <code>well</code> на каждом круге получает следующую ячейку полки. Тело цикла это строки с отступом в 4 пробела.</p>
+    </div>
+    <div class="loop-grid">
+      <div class="stack">
+        <pre class="code numbers" id="forCode"></pre>
+        <div class="btn-row">
+          <button class="btn primary" id="forNext">Следующий шаг</button>
+          <button class="btn" id="forPlay">Проиграть</button>
+          <button class="btn" id="forReset">Сначала</button>
+          <span class="iter" id="forIter"></span>
+        </div>
+      </div>
+      <div class="panel stack">
+        <div class="panel-title">Полка wells</div>
+        <div class="shelf" id="forShelf"></div>
+        <div class="grid-2" style="align-items:end">
+          <div><div class="panel-title">Коробка well сейчас</div><div id="forBox"></div></div>
+          <div><div class="panel-title">Вывод</div><div class="console" id="forOut"></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="whileloop">
+    <div class="block-head">
+      <span class="tag">Интерактив В</span>
+      <h2>Цикл while: повторяй, пока условие верно</h2>
+      <p>Счётчик <code>i</code> уменьшается на каждом круге. Когда <code>i &gt; 0</code> станет ложным, цикл закончится. Потом нажмите красную кнопку и посмотрите, что будет без строки <code>i -= 1</code>.</p>
+    </div>
+    <div class="loop-grid">
+      <div class="stack">
+        <pre class="code numbers" id="whCode"></pre>
+        <div class="btn-row">
+          <button class="btn primary" id="whNext">Следующий шаг</button>
+          <button class="btn" id="whReset">Сначала</button>
+          <button class="btn danger" id="whForget">Что будет, если забыть i -= 1</button>
+        </div>
+      </div>
+      <div class="panel stack">
+        <div class="grid-2" style="align-items:start">
+          <div><div class="panel-title">Коробка i</div><div id="whBox"></div></div>
+          <div><div class="panel-title">Проверка условия</div><div class="conds" id="whCond"></div></div>
+        </div>
+        <div id="floodBar" class="flood-meter" hidden>
+          <span>Напечатано строк: <span class="count" id="floodCount">0</span></span>
+          <button class="btn danger ctrlc pulse" id="btnCtrlC">Ctrl+C: остановить</button>
+          <span class="small muted">или нажмите <kbd>Ctrl</kbd>+<kbd>C</kbd> на клавиатуре</span>
+        </div>
+        <div><div class="panel-title">Терминал</div><div class="console flood" id="whOut"></div></div>
+        <div class="note" id="whNote" hidden>Цикл без изменения счётчика никогда не закончится: <code>i</code> всегда 3, условие всегда верно. Остановить программу: <kbd>Ctrl</kbd>+<kbd>C</kbd> в терминале VS Code (на macOS тоже Ctrl, не Cmd). В Jupyter кнопка ■ «Interrupt» над ячейкой.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <span class="tag">Как это выглядит в коде</span>
+      <h2>Условие внутри цикла: так выглядит реальная проверка</h2>
+    </div>
+    <div class="grid-2">
+<pre data-hl>pressures = {"T-101": 78.4, "T-102": 104.2, "T-201": 57.9}
+
+for well, pressure in pressures.items():
+    if pressure &gt; 100:
+        print(well, "высокое давление, проверить")
+    elif pressure &lt; 60:
+        print(well, "низкое давление")
+    else:
+        print(well, "норма")</pre>
+      <div class="stack">
+        <p><b>Двоеточие и отступ.</b> После <code>if</code>, <code>elif</code>, <code>else</code>, <code>for</code>, <code>while</code> всегда двоеточие. Всё, что относится к ним, сдвинуто на 4 пробела. Отступ в Python работает как скобки.</p>
+        <p><b>Сравнения:</b> <code>&gt;</code>, <code>&lt;</code>, <code>&gt;=</code>, <code>&lt;=</code>, <code>==</code> (равно), <code>!=</code> (не равно). Одно <code>=</code> кладёт в коробку, два <code>==</code> сравнивают.</p>
+        <p><b>В pandas циклы по строкам почти не нужны.</b> Там та же проверка пишется одной строкой для всей колонки: <code>df[df["Давление_бар"] &gt; 100]</code>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block mistake">
+    <div class="block-head">
+      <span class="tag">Типичная ошибка</span>
+      <h2>Забыли отступ или двоеточие</h2>
+    </div>
+    <div class="pair">
+      <div><div class="bad-label">Так падает</div>
+<pre data-hl>for well in wells:
+print(well)</pre>
+<p class="small" style="margin-top:8px"><code>IndentationError: expected an indented block after 'for' statement on line 1</code>. Python не знает, что повторять.</p></div>
+      <div><div class="good-label">Так работает</div>
+<pre data-hl>for well in wells:
+    print(well)</pre>
+<p class="small" style="margin-top:8px">Тело цикла сдвинуто на 4 пробела. VS Code ставит их сам после Enter, если в конце строки есть двоеточие.</p></div>
+    </div>
+  </section>
+
+  <section class="block ask">
+    <div class="block-head">
+      <span class="tag">Спроси ИИ</span>
+      <h2>Попросите объяснить ветки на своих числах</h2>
+    </div>
+<pre class="prompt-box" id="prompt4">Объясни этот код как новичку. Для давления 55, 78 и 104 бар покажи по шагам,
+какое условие Python проверяет, что получается (True или False) и какая строка выполнится.
+Потом перепиши проверку для колонки Давление_бар в pandas без цикла for.
+
+for well, pressure in pressures.items():
+    if pressure &gt; 100:
+        print(well, "высокое давление, проверить")
+    elif pressure &lt; 60:
+        print(well, "низкое давление")
+    else:
+        print(well, "норма")</pre>
+    <div class="btn-row"><button class="btn primary" data-copy="#prompt4">Скопировать промпт</button></div>
+  </section>
+</main>
+
+<nav id="pager"></nav>
+<p class="foot-note">Данные условные, названия объектов вымышлены. Тренинг «Python-аналитика с ИИ», EY.</p>
+
+<script src="app.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  function box(name, val, cls) {
+    return '<div class="vbox new"><div class="v-label">' + EY.esc(name) + '</div><div class="v-body ' + (cls || "") + '"><span class="v-val drop">' + EY.esc(val) + "</span></div></div>";
+  }
+
+  /* ---------- А. развилка ---------- */
+  var IF_CODE = [
+    "pressure = 78",
+    "if pressure > 100:",
+    '    status = "Высокое, проверить"',
+    "elif pressure < 60:",
+    '    status = "Низкое, возможен простой"',
+    "else:",
+    '    status = "Норма"',
+    "print(status)"
+  ];
+  var ifCode = $("ifCode"), slider = $("pSlider");
+  var ROAD =
+    '<svg viewBox="0 0 560 340" role="img" aria-label="Развилка: три таблички по очереди">' +
+    '<path class="path" id="rMain1" d="M110 325 L110 240"/>' +
+    '<path class="path" id="rMain2" d="M110 240 L110 140"/>' +
+    '<path class="path" id="rMain3" d="M110 140 L110 50 L250 50"/>' +
+    '<path class="path" id="rB1" d="M110 240 L250 240"/>' +
+    '<path class="path" id="rB2" d="M110 140 L250 140"/>' +
+    '<path class="dash" d="M110 325 L110 50 L250 50 M110 240 L250 240 M110 140 L250 140"/>' +
+    '<rect class="dest" id="d1" x="262" y="214" width="286" height="52" rx="8"/><text x="280" y="246">Высокое, проверить</text>' +
+    '<rect class="dest" id="d2" x="262" y="114" width="286" height="52" rx="8"/><text x="280" y="146">Низкое, возможен простой</text>' +
+    '<rect class="dest" id="d3" x="262" y="24" width="286" height="52" rx="8"/><text x="280" y="56">Норма (else)</text>' +
+    '<g transform="translate(18 226)"><rect class="fork" width="84" height="28" rx="6"/><text class="ftext" x="42" y="19" text-anchor="middle">&gt; 100 ?</text></g>' +
+    '<g transform="translate(18 126)"><rect class="fork" width="84" height="28" rx="6"/><text class="ftext" x="42" y="19" text-anchor="middle">&lt; 60 ?</text></g>' +
+    '<text x="126" y="318" style="font-size:13px;fill:#6C6C7A">старт: pressure = <tspan id="rStart">78</tspan></text>' +
+    '<circle class="car" id="car" r="11" cx="110" cy="325"/>' +
+    "</svg>";
+  $("road").innerHTML = ROAD;
+  var car = $("car");
+  function setIf() {
+    var p = +slider.value;
+    $("pVal").textContent = p;
+    $("rStart").textContent = p;
+    IF_CODE[0] = "pressure = " + p;
+    var branch = p > 100 ? 1 : (p < 60 ? 2 : 3);
+    var active = [0, 1], dimmed = [];
+    if (branch === 1) { active.push(2); dimmed = [3, 4, 5, 6]; }
+    if (branch === 2) { active.push(3, 4); dimmed = [2, 5, 6]; }
+    if (branch === 3) { active.push(3, 5, 6); dimmed = [2, 4]; }
+    active.push(7);
+    var classes = {};
+    for (var i = 0; i < IF_CODE.length; i++) classes[i] = dimmed.indexOf(i) >= 0 ? "dim" : "";
+    classes[branch === 1 ? 2 : branch === 2 ? 4 : 6] = "active";
+    EY.renderCode(ifCode, IF_CODE.join("\n"), { classes: classes });
+    var c1 = p > 100, c2 = p < 60;
+    $("conds").innerHTML =
+      '<div class="cond ' + (c1 ? "true" : "false") + '"><span>if ' + p + ' &gt; 100</span><span class="v">' + (c1 ? "True → едем сюда" : "False → дальше") + "</span></div>" +
+      '<div class="cond ' + (c1 ? "skip" : (c2 ? "true" : "false")) + '"><span>elif ' + p + ' &lt; 60</span><span class="v">' + (c1 ? "не проверяется" : (c2 ? "True → едем сюда" : "False → дальше")) + "</span></div>" +
+      '<div class="cond ' + (branch === 3 ? "true" : "skip") + '"><span>else</span><span class="v">' + (branch === 3 ? "остальные случаи → сюда" : "не нужен") + "</span></div>";
+    ["rMain1", "rMain2", "rMain3", "rB1", "rB2"].forEach(function (id) { $(id).classList.remove("on"); });
+    ["d1", "d2", "d3"].forEach(function (id, k) { $(id).classList.toggle("on", k + 1 === branch); });
+    $("rMain1").classList.add("on");
+    var target;
+    if (branch === 1) { $("rB1").classList.add("on"); target = [250, 240]; }
+    if (branch === 2) { $("rMain2").classList.add("on"); $("rB2").classList.add("on"); target = [250, 140]; }
+    if (branch === 3) { $("rMain2").classList.add("on"); $("rMain3").classList.add("on"); target = [250, 50]; }
+    car.setAttribute("cx", target[0]); car.setAttribute("cy", target[1]);
+    var res = branch === 1 ? "Высокое, проверить" : branch === 2 ? "Низкое, возможен простой" : "Норма";
+    var r = $("ifRes"); r.textContent = res; r.style.animation = "none"; void r.offsetWidth; r.style.animation = "";
+  }
+  car.style.transition = "cx 0.45s ease, cy 0.45s ease";
+  slider.addEventListener("input", setIf);
+  setIf();
+
+  /* ---------- Б. for ---------- */
+  var WELLS = ["T-101", "T-102", "T-201", "T-301", "T-401"];
+  var FOR_CODE = 'wells = ["T-101", "T-102", "T-201",\n         "T-301", "T-401"]\nfor well in wells:\n    print("Проверяю", well)\nprint("Готово")';
+  var forCode = $("forCode"), forShelf = $("forShelf"), forBox = $("forBox"), forOut = $("forOut"), forIter = $("forIter");
+  EY.renderCode(forCode, FOR_CODE);
+  var fs, playTimer = null;
+  function forInit() {
+    fs = { pc: -1, i: -1, out: [], done: false };
+    EY.setActive(forCode, -1);
+    forShelf.innerHTML = WELLS.map(function (w, i) {
+      return '<div class="cell"><div class="idx">' + i + '</div><div class="slot">' + w + '</div><div class="ptr">▲</div></div>';
+    }).join("");
+    forBox.innerHTML = '<div class="muted small">ещё не создана</div>';
+    forOut.innerHTML = '<span class="c-muted">Пусто</span>';
+    forIter.textContent = "";
+    $("forNext").disabled = false;
+  }
+  function forCells() {
+    forShelf.querySelectorAll(".cell").forEach(function (c, k) {
+      c.classList.toggle("is-cur", k === fs.i);
+      c.classList.toggle("is-past", k < fs.i);
+      c.querySelector(".idx").classList.toggle("is-on", k === fs.i);
+    });
+  }
+  function forStep() {
+    if (fs.done) return;
+    if (fs.pc === -1) { fs.pc = 0; forIter.textContent = "создали полку wells"; }
+    else if (fs.pc === 0 || fs.pc === 2) {
+      fs.pc = 1;
+      fs.i++;
+      if (fs.i >= WELLS.length) { fs.pc = 3; fs.out.push("Готово"); fs.done = true; forIter.textContent = "ячейки кончились, выходим из цикла"; }
+      else { forBox.innerHTML = box("well", '"' + WELLS[fs.i] + '"', "t-str"); forIter.textContent = "круг " + (fs.i + 1) + " из " + WELLS.length + ": well = wells[" + fs.i + "]"; }
+    } else if (fs.pc === 1) { fs.pc = 2; fs.out.push("Проверяю " + WELLS[fs.i]); forIter.textContent = "круг " + (fs.i + 1) + " из " + WELLS.length + ": печатаем"; }
+    EY.setActive(forCode, [0, 2, 3, 4][fs.pc]);
+    forCells();
+    if (fs.out.length) forOut.innerHTML = fs.out.map(function (l, k) { return '<span class="' + (k === fs.out.length - 1 ? "c-new" : "") + '">' + EY.esc(l) + "</span>"; }).join("\n");
+    if (fs.done) { $("forNext").disabled = true; stopPlay(); forShelf.querySelectorAll(".cell").forEach(function (c) { c.classList.remove("is-cur"); c.classList.add("is-past"); }); }
+  }
+  function stopPlay() { if (playTimer) { clearInterval(playTimer); playTimer = null; $("forPlay").textContent = "Проиграть"; } }
+  $("forNext").addEventListener("click", function () { stopPlay(); forStep(); });
+  $("forReset").addEventListener("click", function () { stopPlay(); forInit(); });
+  $("forPlay").addEventListener("click", function () {
+    if (playTimer) { stopPlay(); return; }
+    if (fs.done) forInit();
+    $("forPlay").textContent = "Пауза";
+    playTimer = setInterval(forStep, 800);
+  });
+  forInit();
+
+  /* ---------- В. while ---------- */
+  var WH_CODE = 'i = 3\nwhile i > 0:\n    print("Осталось:", i)\n    i -= 1\nprint("Стоп")';
+  var whCode = $("whCode"), whBox = $("whBox"), whCond = $("whCond"), whOut = $("whOut");
+  var ws, flood = null, floodN = 0;
+  function whInit(forget) {
+    stopFlood(false);
+    ws = { pc: -1, i: null, out: [], done: false, forget: !!forget };
+    EY.renderCode(whCode, WH_CODE, { classes: forget ? { 3: "strike" } : {} });
+    whBox.innerHTML = '<div class="muted small">ещё не создана</div>';
+    whCond.innerHTML = '<div class="cond skip"><span>i &gt; 0</span><span class="v">?</span></div>';
+    whOut.innerHTML = '<span class="c-muted">Пусто</span>';
+    $("whNext").disabled = false;
+    $("floodBar").hidden = true; $("whNote").hidden = true;
+  }
+  function whRender() {
+    EY.setActive(whCode, ws.pc);
+    if (ws.i !== null) whBox.innerHTML = box("i", String(ws.i), "t-int");
+    whOut.innerHTML = ws.out.length ? ws.out.map(function (l, k) { return '<span class="' + (k === ws.out.length - 1 ? "c-new" : "") + '">' + EY.esc(l) + "</span>"; }).join("\n") : '<span class="c-muted">Пусто</span>';
+  }
+  function whStep() {
+    if (ws.done) return;
+    if (ws.pc === -1) { ws.pc = 0; ws.i = 3; }
+    else if (ws.pc === 0 || ws.pc === 3 || (ws.forget && ws.pc === 2)) {
+      ws.pc = 1;
+      var ok = ws.i > 0;
+      whCond.innerHTML = '<div class="cond ' + (ok ? "true" : "false") + '"><span>' + ws.i + ' &gt; 0</span><span class="v">' + (ok ? "True → ещё круг" : "False → выход") + "</span></div>";
+      if (!ok) { ws.pc = 4; ws.out.push("Стоп"); ws.done = true; $("whNext").disabled = true; }
+    } else if (ws.pc === 1) { ws.pc = 2; ws.out.push("Осталось: " + ws.i); if (ws.forget && ws.out.length >= 2) { whRender(); startFlood(); return; } }
+    else if (ws.pc === 2) { ws.pc = 3; ws.i -= 1; }
+    whRender();
+  }
+  function startFlood() {
+    $("whNext").disabled = true;
+    $("floodBar").hidden = false; $("whNote").hidden = false;
+    floodN = ws.out.length;
+    var buf = ws.out.slice();
+    flood = setInterval(function () {
+      for (var k = 0; k < 7; k++) { buf.push("Осталось: 3"); floodN++; }
+      if (buf.length > 120) buf = buf.slice(-120);
+      whOut.textContent = buf.join("\n");
+      whOut.scrollTop = whOut.scrollHeight;
+      $("floodCount").textContent = floodN.toLocaleString("ru-RU");
+      EY.setActive(whCode, floodN % 2 ? 1 : 2);
+    }, 45);
+  }
+  function stopFlood(showTrace) {
+    if (!flood) return;
+    clearInterval(flood); flood = null;
+    if (showTrace) {
+      whOut.innerHTML = EY.esc(whOut.textContent) + '\n<span class="c-err">^C\nTraceback (most recent call last):\n  File "C:\\Users\\aigerim\\ey_python\\loop.py", line 3, in &lt;module&gt;\n    print("Осталось:", i)\nKeyboardInterrupt</span>';
+      whOut.scrollTop = whOut.scrollHeight;
+      $("btnCtrlC").classList.remove("pulse");
+      $("btnCtrlC").disabled = true;
+      EY.setActive(whCode, -1);
+    }
+  }
+  $("whNext").addEventListener("click", whStep);
+  $("whReset").addEventListener("click", function () { $("btnCtrlC").disabled = false; $("btnCtrlC").classList.add("pulse"); whInit(false); });
+  $("whForget").addEventListener("click", function () {
+    $("btnCtrlC").disabled = false; $("btnCtrlC").classList.add("pulse");
+    whInit(true);
+    whStep(); whStep(); whStep();
+    setTimeout(function () { whStep(); whStep(); }, 500);
+  });
+  $("btnCtrlC").addEventListener("click", function () { stopFlood(true); });
+  document.addEventListener("keydown", function (e) {
+    if (flood && e.ctrlKey && (e.key === "c" || e.key === "C" || e.key === "с" || e.key === "С")) { e.preventDefault(); stopFlood(true); }
+  });
+  whInit(false);
+})();
+</script>
+</body>
+</html>

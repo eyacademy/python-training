@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Списки и словари</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Onest:wght@400;500;600;700&family=Unbounded:wght@500;700&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%22-13 0 1195 1195%22%3E%3Cstyle%3E.l%7Bfill:%232E2E38%7D%40media %28prefers-color-scheme:dark%29%7B.l%7Bfill:%23fff%7D%7D%3C/style%3E%3Cpath fill=%22%23FFE600%22 d=%22M0 427 1168 0v220z%22/%3E%3Cpath class=%22l%22 d=%22M10 604h335l79 136H187v97h214v124H187v97h296v136H10zM401 604h195l101 192 100-192h193L784 961v233H607V961z%22/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<style>
+  .mode-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+  .shelf-wrap { position: relative; overflow-x: auto; padding: 4px 14px 8px; margin-inline: -14px; }
+  .shelf-inner { position: relative; width: max-content; }
+  .cell { cursor: pointer; }
+  .cell:hover .slot { background: var(--yellow-wash); }
+  .cell.is-on:hover .slot { background: var(--yellow); }
+  .cell.new .slot { animation: pop 0.45s ease; }
+  .cuts { position: relative; height: 58px; }
+  .cut { position: absolute; top: 2px; transform: translateX(-50%); font-family: var(--f-mono); font-size: 0.8rem; color: var(--muted); display: grid; justify-items: center; }
+  .cut::before { content: ""; width: 2px; height: 8px; background: var(--line); margin-bottom: 2px; }
+  .cut.start, .cut.stop { color: var(--ink); font-weight: 700; }
+  .cut.start::before, .cut.stop::before { background: var(--red); height: 12px; width: 3px; }
+  .cut .lbl { font-size: 0.68rem; font-family: var(--f-body); color: var(--red); font-weight: 600; white-space: nowrap; }
+  .result-line { font-family: var(--f-mono); font-size: 1.15rem; padding: 16px 20px; border-radius: 8px; background: var(--code-bg); color: var(--code-fg); animation: rise 0.35s ease; }
+  .result-line .p { color: var(--yellow); }
+  .result-line .err { color: #FF9A8F; }
+  @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .slice-ctrl { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .slice-ctrl output { font-family: var(--f-mono); font-weight: 700; }
+  .cards { display: flex; gap: 34px 14px; flex-wrap: wrap; padding: 26px 18px 18px; background: #E9E6DF; border-radius: 10px; border: 2px solid var(--ink); min-height: 170px; align-items: flex-end; }
+  .card { width: 170px; background: var(--surface); border: 2px solid var(--ink); border-radius: 4px 4px 6px 6px; position: relative; transition: transform 0.35s cubic-bezier(.2,.8,.3,1.2), background 0.3s ease, box-shadow 0.3s ease; }
+  .card .key { position: absolute; top: -20px; left: 10px; font-family: var(--f-mono); font-size: 0.8rem; font-weight: 700; background: var(--yellow); border: 2px solid var(--ink); border-bottom: 0; border-radius: 6px 6px 0 0; padding: 1px 10px; }
+  .card .val { padding: 22px 12px 18px; font-family: var(--f-mono); font-weight: 600; text-align: center; font-size: 1.02rem; }
+  .card.pulled { transform: translateY(-18px); box-shadow: 0 12px 20px rgba(46,46,56,0.2); background: var(--yellow-wash); }
+  .card.new { animation: pop 0.45s ease; }
+  .card.changed .val { animation: flash 0.9s ease; }
+  .key-form { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: end; }
+  .add-form { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: end; }
+  @media (max-width: 800px) { .add-form, .key-form, .slice-ctrl { grid-template-columns: 1fr; } }
+  .df-stage { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px 28px; align-items: start; }
+  .df-stage .arrow-go { grid-column: 1 / -1; order: 3; grid-template-columns: auto auto; justify-content: start; align-items: center; gap: 16px; }
+  @media (max-width: 1000px) { .df-stage { grid-template-columns: 1fr; } }
+  .arrow-go { display: grid; justify-items: center; gap: 6px; font-family: var(--f-mono); font-size: 0.75rem; color: var(--muted); text-align: center; }
+  .arrow-go svg { width: 64px; height: 28px; }
+  table.df { border-collapse: collapse; font-family: var(--f-mono); font-size: 0.88rem; width: 100%; background: var(--surface); }
+  table.df th, table.df td { border: 1px solid var(--line); padding: 7px 12px; text-align: left; }
+  table.df th { background: #217346; color: #fff; font-weight: 600; }
+  table.df td.idx, table.df th.idx { background: #F0F0F3; color: var(--muted); text-align: right; width: 44px; }
+  table.df td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  table.df tr.new td { animation: flash 1.2s ease; }
+  .dtypes { font-family: var(--f-mono); font-size: 0.82rem; color: var(--muted); margin-top: 10px; white-space: pre; }
+  .df-empty { color: var(--muted); padding: 30px; text-align: center; border: 2px dashed var(--line); border-radius: 10px; }
+  #rowsCode { font-size: 0.8rem; }
+</style>
+</head>
+<body data-page="5">
+<header id="site-header"></header>
+
+<main class="wrap">
+  <div class="hero">
+    <div class="eyebrow"><span class="pill">Тема 5</span><span>День 1 · Коллекции и базовые операции</span></div>
+    <h1>Списки и словари</h1>
+    <p class="lead">Список (list) хранит много значений по порядку: все скважины объекта, добычу по дням. Словарь (dict) хранит значения под именами: одна запись о скважине, где у каждого числа есть подпись.</p>
+    <div class="metaphor">
+      <span class="m-label">Метафора</span>
+      <p>Список это <b>полка с пронумерованными ячейками</b>, нумерация с 0. Словарь это <b>картотека</b>: на каждой карточке ярлык (ключ) и содержимое (значение). Карточку ищут по ярлыку, а не по номеру.</p>
+    </div>
+  </div>
+
+  <section class="block" id="list">
+    <div class="block-head">
+      <span class="tag">Интерактив</span>
+      <h2>Полка wells: индексы и срезы</h2>
+      <p>Нажмите на ячейку или на готовый пример. Сверху обычные индексы с 0, снизу отрицательные: <code>-1</code> это последняя ячейка. В режиме среза двигайте начало и конец.</p>
+    </div>
+    <div class="panel stack">
+      <div class="mode-tabs">
+        <button class="chip-btn is-on" data-mode="index">индекс wells[i]</button>
+        <button class="chip-btn" data-mode="slice">срез wells[a:b]</button>
+        <span style="flex:1"></span>
+        <button class="chip-btn" id="btnAppend">wells.append("T-403")</button>
+        <button class="chip-btn" id="btnListReset">сбросить полку</button>
+      </div>
+      <div class="shelf-wrap"><div class="shelf-inner">
+        <div class="shelf" id="shelf"></div>
+        <div class="cuts" id="cuts" hidden></div>
+      </div></div>
+      <div id="indexCtrl" class="btn-row">
+        <span class="small muted">Примеры:</span>
+        <button class="chip-btn" data-i="0">wells[0]</button>
+        <button class="chip-btn" data-i="2">wells[2]</button>
+        <button class="chip-btn" data-i="-1">wells[-1]</button>
+        <button class="chip-btn" data-i="-2">wells[-2]</button>
+        <button class="chip-btn" data-i="6">wells[6]</button>
+      </div>
+      <div id="sliceCtrl" class="stack" hidden>
+        <div class="slice-ctrl">
+          <label class="field">Начало a: <output id="aOut">1</output><input type="range" id="aIn" min="0" max="6" value="1"></label>
+          <label class="field">Конец b (не входит): <output id="bOut">3</output><input type="range" id="bIn" min="0" max="6" value="3"></label>
+        </div>
+        <div class="btn-row">
+          <span class="small muted">Примеры:</span>
+          <button class="chip-btn" data-s="1,3">wells[1:3]</button>
+          <button class="chip-btn" data-s=",2">wells[:2]</button>
+          <button class="chip-btn" data-s="3,">wells[3:]</button>
+          <button class="chip-btn" data-s="-2,">wells[-2:]</button>
+          <button class="chip-btn" data-s=",">wells[:]</button>
+        </div>
+      </div>
+      <div class="result-line" id="listRes"></div>
+      <p class="small muted" id="listHint"></p>
+    </div>
+  </section>
+
+  <section class="block" id="dict">
+    <div class="block-head">
+      <span class="tag">Интерактив</span>
+      <h2>Картотека record: достать по ключу, добавить карточку</h2>
+      <p>Ключ пишется в квадратных скобках и кавычках: <code>record["нефть"]</code>. Попробуйте ключ с большой буквы или ключ, которого нет.</p>
+    </div>
+    <div class="split">
+      <div class="stack">
+        <div class="cards" id="cards"></div>
+        <pre class="code" id="dictCode"></pre>
+      </div>
+      <div class="panel stack">
+        <div class="key-form">
+          <label class="field">record[ ключ ]<input type="text" id="keyIn" class="mono" value="нефть"></label>
+          <button class="btn primary" id="btnGet">Достать</button>
+        </div>
+        <div class="btn-row">
+          <button class="chip-btn" data-k="нефть">"нефть"</button>
+          <button class="chip-btn" data-k="скважина">"скважина"</button>
+          <button class="chip-btn" data-k="Нефть">"Нефть"</button>
+          <button class="chip-btn" data-k="вода">"вода"</button>
+        </div>
+        <div class="result-line" id="dictRes"></div>
+        <p class="small" id="dictHint"></p>
+        <hr style="border:0;border-top:1px solid var(--line);width:100%">
+        <div class="panel-title" style="margin:0">Добавить или заменить карточку</div>
+        <div class="add-form">
+          <label class="field">Ключ<input type="text" id="addKey" class="mono" value="вода"></label>
+          <label class="field">Значение<input type="text" id="addVal" class="mono" value="50.7"></label>
+          <button class="btn" id="btnAdd">Положить</button>
+        </div>
+        <p class="small muted">Если ключ уже есть, старое значение заменится. Двух карточек с одним ключом в словаре не бывает.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="table">
+    <div class="block-head">
+      <span class="tag">Интерактив</span>
+      <h2>Список словарей: таблица до pandas</h2>
+      <p>Каждый словарь это строка таблицы, ключи это заголовки колонок. Такую структуру часто возвращает ИИ или JSON-файл. Одна команда <code>pd.DataFrame(rows)</code> превращает её в настоящую таблицу.</p>
+    </div>
+    <div class="df-stage">
+      <div class="stack">
+        <div class="code-head"><span>rows: list из dict</span></div>
+        <pre class="code" id="rowsCode"></pre>
+        <div class="btn-row">
+          <button class="btn primary" id="btnDf">Превратить в DataFrame: pd.DataFrame(rows)</button>
+          <button class="btn" id="btnAddRow">Добавить строку</button>
+        </div>
+      </div>
+      <div class="stack" id="dfSide">
+        <div class="df-empty" id="dfEmpty">Нажмите <b>pd.DataFrame(rows)</b>, чтобы получить таблицу</div>
+        <div id="dfView" hidden>
+          <div class="code-head"><span>df в памяти, как лист Excel</span><span>df.shape = <b id="dfShape"></b></span></div>
+          <div class="table-wrap"><table class="df" id="dfTable"></table></div>
+          <div class="dtypes" id="dfTypes"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <span class="tag">Как это выглядит в коде</span>
+      <h2>Главные операции</h2>
+    </div>
+    <div class="grid-2">
+<pre data-hl>wells = ["T-101", "T-102", "T-201"]
+print(wells[0])        # T-101, первая ячейка
+print(wells[-1])       # T-201, последняя
+print(wells[0:2])      # ['T-101', 'T-102']
+print(len(wells))      # 3
+wells.append("T-202")  # положить в конец
+print("T-102" in wells)  # True, есть на полке</pre>
+<pre data-hl>record = {"скважина": "T-101", "нефть": 531.4}
+print(record["нефть"])          # 531.4
+record["вода"] = 50.7           # новая карточка
+print(record.get("газ", 0))     # 0, если ключа нет
+for key, value in record.items():
+    print(key, "=", value)</pre>
+    </div>
+  </section>
+
+  <section class="block mistake">
+    <div class="block-head">
+      <span class="tag">Типичная ошибка</span>
+      <h2>Счёт с единицы и ключ не той буквой</h2>
+    </div>
+    <div class="pair">
+      <div><div class="bad-label">Так падает</div>
+<pre data-hl>wells = ["T-101", "T-102", "T-201"]
+print(wells[3])       # IndexError: list index out of range
+print(record["Нефть"])  # KeyError: 'Нефть'</pre></div>
+      <div><div class="good-label">Так работает</div>
+<pre data-hl>print(wells[2])        # третья ячейка имеет номер 2
+print(wells[-1])       # последняя, сколько бы их ни было
+print(record["нефть"])  # ключ буква в букву</pre></div>
+    </div>
+    <p>В Excel строки считают с 1, в Python с 0. Ключ словаря должен совпадать полностью, включая регистр и пробелы. То же правило действует для названий колонок в pandas: <code>df["Нефть_т"]</code>, а не <code>df["нефть_т"]</code>.</p>
+  </section>
+
+  <section class="block ask">
+    <div class="block-head">
+      <span class="tag">Спроси ИИ</span>
+      <h2>Попросите собрать словарь из списка</h2>
+    </div>
+<pre class="prompt-box" id="prompt5">Есть список словарей rows, в каждом ключи "Скважина", "Объект", "Нефть_т". Данные условные.
+Напиши на Python 3.14 без pandas:
+1) словарь oil_by_object, где ключ это объект, а значение это сумма нефти;
+2) печать результата по одному объекту в строке.
+Потом покажи, как то же самое сделать в pandas через DataFrame и groupby.
+Объясни разницу между list и dict на этом примере, как новичку.</pre>
+    <div class="btn-row"><button class="btn primary" data-copy="#prompt5">Скопировать промпт</button></div>
+  </section>
+</main>
+
+<nav id="pager"></nav>
+<p class="foot-note">Данные условные, названия объектов вымышлены. Тренинг «Python-аналитика с ИИ», EY.</p>
+
+<script src="app.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var py = EY.py;
+  var CELL_W = 118;
+
+  /* ---------- список ---------- */
+  var BASE = ["T-101", "T-102", "T-201", "T-202", "T-301", "T-401"];
+  var wells = BASE.slice(), mode = "index", sel = 0, sa = 1, sb = 3, justAdded = -1;
+  var shelf = $("shelf"), cuts = $("cuts"), listRes = $("listRes"), listHint = $("listHint");
+  function listRepr(arr) { return "[" + arr.map(function (w) { return "'" + w + "'"; }).join(", ") + "]"; }
+
+  function renderShelf(on, cur) {
+    var n = wells.length;
+    shelf.innerHTML = wells.map(function (w, i) {
+      var cls = "cell" + (on.indexOf(i) >= 0 ? " is-on" : "") + (i === justAdded ? " new" : "");
+      var top = '<div class="idx' + (cur === i ? " is-on" : "") + '">' + i + "</div>";
+      var bot = '<div class="idx neg' + (cur === i - n ? " is-on" : "") + '">' + (i - n) + "</div>";
+      return '<div class="' + cls + '" data-cell="' + i + '">' + top + '<div class="slot">' + w + "</div>" + bot + "</div>";
+    }).join("");
+    justAdded = -1;
+    shelf.querySelectorAll("[data-cell]").forEach(function (c) {
+      c.addEventListener("click", function () { if (mode !== "index") setMode("index"); sel = +c.getAttribute("data-cell"); showIndex(); });
+    });
+  }
+  function norm(i, n) { return i < 0 ? n + i : i; }
+  function showIndex() {
+    var n = wells.length, i = norm(sel, n);
+    var expr = "wells[" + sel + "]";
+    if (i < 0 || i >= n) {
+      renderShelf([], null);
+      listRes.innerHTML = '<span class="p">&gt;&gt;&gt;</span> ' + expr + '\n<span class="err">IndexError: list index out of range</span>';
+      listRes.style.whiteSpace = "pre";
+      listHint.textContent = "На полке " + n + " ячеек, их номера от 0 до " + (n - 1) + ". Ячейки с номером " + sel + " нет.";
+    } else {
+      renderShelf([i], sel);
+      listRes.style.whiteSpace = "pre";
+      listRes.innerHTML = '<span class="p">&gt;&gt;&gt;</span> ' + expr + "\n'" + wells[i] + "'";
+      listHint.textContent = sel < 0 ? "Отрицательный индекс считает с конца: wells[-1] последняя, wells[-2] предпоследняя. Здесь " + sel + " = " + i + "." : "Номер " + i + " это " + (i + 1) + "-я ячейка по счёту: нумерация начинается с 0.";
+    }
+    document.querySelectorAll("[data-i]").forEach(function (b) { b.classList.toggle("is-on", +b.getAttribute("data-i") === sel); });
+  }
+  function showSlice(aTxt, bTxt) {
+    var n = wells.length;
+    var a = sa, b = sb;
+    var aShow = aTxt !== undefined ? aTxt : String(a), bShow = bTxt !== undefined ? bTxt : String(b);
+    var ai = Math.max(0, Math.min(n, norm(a, n))), bi = Math.max(0, Math.min(n, norm(b, n)));
+    var on = []; for (var i = ai; i < bi; i++) on.push(i);
+    renderShelf(on, null);
+    cuts.hidden = false;
+    cuts.style.width = n * CELL_W + "px";
+    var html = "";
+    for (var k = 0; k <= n; k++) {
+      var cls = "cut" + (k === ai ? " start" : "") + (k === bi ? " stop" : "");
+      var lbl = k === ai && k === bi ? "начало и конец" : k === ai ? "начало" : k === bi ? "конец" : "";
+      html += '<div class="' + cls + '" style="left:' + k * CELL_W + 'px"><span>' + k + '</span><span class="lbl">' + lbl + "</span></div>";
+    }
+    cuts.innerHTML = html;
+    listRes.style.whiteSpace = "pre";
+    listRes.innerHTML = '<span class="p">&gt;&gt;&gt;</span> wells[' + aShow + ":" + bShow + "]\n" + listRepr(wells.slice(ai, bi));
+    listHint.textContent = "Срез режет полку по границам между ячейками. Берём от границы " + ai + " до границы " + bi + ": ячеек " + on.length + ". Ячейка с номером конца в срез не входит. Пустое место перед двоеточием значит «с начала», после двоеточия «до конца».";
+    $("aOut").textContent = aShow === "" ? "(пусто) 0" : aShow; $("bOut").textContent = bShow === "" ? "(пусто) " + n : bShow;
+  }
+  function setMode(m) {
+    mode = m;
+    document.querySelectorAll("[data-mode]").forEach(function (b) { b.classList.toggle("is-on", b.getAttribute("data-mode") === m); });
+    $("indexCtrl").hidden = m !== "index"; $("sliceCtrl").hidden = m !== "slice"; cuts.hidden = m !== "slice";
+    if (m === "index") showIndex(); else showSlice();
+  }
+  document.querySelectorAll("[data-mode]").forEach(function (b) { b.addEventListener("click", function () { setMode(b.getAttribute("data-mode")); }); });
+  document.querySelectorAll("[data-i]").forEach(function (b) { b.addEventListener("click", function () { sel = +b.getAttribute("data-i"); showIndex(); }); });
+  function syncRanges() { $("aIn").max = wells.length; $("bIn").max = wells.length; }
+  $("aIn").addEventListener("input", function () { sa = +this.value; showSlice(); });
+  $("bIn").addEventListener("input", function () { sb = +this.value; showSlice(); });
+  document.querySelectorAll("[data-s]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var p = b.getAttribute("data-s").split(",");
+      sa = p[0] === "" ? 0 : +p[0]; sb = p[1] === "" ? wells.length : +p[1];
+      $("aIn").value = norm(sa, wells.length); $("bIn").value = norm(sb, wells.length);
+      showSlice(p[0], p[1]);
+    });
+  });
+  $("btnAppend").addEventListener("click", function () {
+    wells.push("T-403"); justAdded = wells.length - 1; syncRanges();
+    if (mode === "index") { sel = -1; showIndex(); listHint.textContent = "append положил T-403 в конец полки. Теперь len(wells) = " + wells.length + ", а wells[-1] указывает на новую ячейку."; }
+    else showSlice();
+  });
+  $("btnListReset").addEventListener("click", function () { wells = BASE.slice(); syncRanges(); sel = 0; sa = 1; sb = 3; $("aIn").value = 1; $("bIn").value = 3; setMode(mode); });
+  setMode("index");
+
+  /* ---------- словарь ---------- */
+  var record = [["скважина", S("T-101")], ["объект", S("КТЛ-1")], ["нефть", F(531.4)], ["давление", F(72.4)]];
+  function S(v) { return py.S(v); } function F(v) { return py.F(v); }
+  var cardsEl = $("cards"), dictCode = $("dictCode"), dictRes = $("dictRes"), dictHint = $("dictHint");
+  function renderCards(pulled, fresh, changed) {
+    cardsEl.innerHTML = record.map(function (kv) {
+      var cls = "card" + (kv[0] === pulled ? " pulled" : "") + (kv[0] === fresh ? " new" : "") + (kv[0] === changed ? " changed" : "");
+      return '<div class="' + cls + '"><span class="key">' + EY.esc(kv[0]) + '</span><div class="val t-' + kv[1].t + '">' + EY.esc(py.repr(kv[1])) + "</div></div>";
+    }).join("");
+    var lines = ["record = {"].concat(record.map(function (kv, i) { return '    "' + kv[0] + '": ' + py.repr(kv[1]).replace(/^'(.*)'$/, '"$1"') + (i < record.length - 1 ? "," : ""); }), ["}"]);
+    EY.renderCode(dictCode, lines.join("\n"));
+  }
+  function find(k) { for (var i = 0; i < record.length; i++) if (record[i][0] === k) return i; return -1; }
+  function getKey(k) {
+    var i = find(k);
+    dictRes.style.whiteSpace = "pre";
+    if (i >= 0) {
+      renderCards(k);
+      dictRes.innerHTML = '<span class="p">&gt;&gt;&gt;</span> record["' + EY.esc(k) + '"]\n' + EY.esc(py.repr(record[i][1]));
+      dictHint.innerHTML = "Нашли карточку с ярлыком <b>" + EY.esc(k) + "</b>. Порядковый номер не нужен.";
+    } else {
+      renderCards(null);
+      dictRes.innerHTML = '<span class="p">&gt;&gt;&gt;</span> record["' + EY.esc(k) + '"]\n<span class="err">KeyError: \'' + EY.esc(k) + "'</span>";
+      var near = record.filter(function (kv) { return kv[0].toLowerCase() === k.toLowerCase().trim(); })[0];
+      dictHint.innerHTML = near ? "Такого ключа нет. Есть похожий: <b>" + EY.esc(near[0]) + "</b>. Регистр и пробелы важны." :
+        "Такой карточки нет. Безопасный способ: <code>record.get(\"" + EY.esc(k) + "\", 0)</code> вернёт 0 вместо ошибки. Или добавьте карточку ниже.";
+    }
+    document.querySelectorAll("[data-k]").forEach(function (b) { b.classList.toggle("is-on", b.getAttribute("data-k") === k); });
+  }
+  $("btnGet").addEventListener("click", function () { getKey($("keyIn").value); });
+  $("keyIn").addEventListener("keydown", function (e) { if (e.key === "Enter") getKey(this.value); });
+  document.querySelectorAll("[data-k]").forEach(function (b) { b.addEventListener("click", function () { $("keyIn").value = b.getAttribute("data-k"); getKey(b.getAttribute("data-k")); }); });
+  $("btnAdd").addEventListener("click", function () {
+    var k = $("addKey").value.trim(); if (!k) return;
+    var raw = $("addVal").value.trim(), v;
+    try { v = py.evalExpr(raw); if (v.t === "tuple") throw 0; } catch (e) { v = py.S(raw); }
+    var i = find(k), code = 'record["' + k + '"] = ' + (v.t === "str" ? '"' + v.v + '"' : py.repr(v));
+    if (i >= 0) { var old = record[i][1]; record[i][1] = v; renderCards(null, null, k); dictHint.innerHTML = "Ключ <b>" + EY.esc(k) + "</b> уже был. Старое значение " + EY.esc(py.repr(old)) + " заменили."; }
+    else { record.push([k, v]); renderCards(null, k); dictHint.innerHTML = "Добавили новую карточку <b>" + EY.esc(k) + "</b>. Теперь в словаре " + record.length + " ключей."; }
+    dictRes.style.whiteSpace = "pre";
+    dictRes.innerHTML = '<span class="p">&gt;&gt;&gt;</span> ' + EY.esc(code) + '\n<span class="p">&gt;&gt;&gt;</span> len(record)\n' + record.length;
+  });
+  renderCards(null);
+  getKey("нефть");
+
+  /* ---------- список словарей → DataFrame ---------- */
+  var POOL = [
+    { "Скважина": "T-101", "Объект": "КТЛ-1", "Нефть_т": 531.4 },
+    { "Скважина": "T-201", "Объект": "КТЛ-2", "Нефть_т": 552.9 },
+    { "Скважина": "T-301", "Объект": "ЗВП", "Нефть_т": 675.4 },
+    { "Скважина": "T-401", "Объект": "ЗСГ", "Нефть_т": 409.7 },
+    { "Скважина": "T-102", "Объект": "КТЛ-1", "Нефть_т": 0.0 },
+    { "Скважина": "T-302", "Объект": "ЗВП", "Нефть_т": 665.8 },
+    { "Скважина": "T-202", "Объект": "КТЛ-2", "Нефть_т": 442.7 }
+  ];
+  var rows = POOL.slice(0, 3), dfMade = false, newRow = -1;
+  var COLS = ["Скважина", "Объект", "Нефть_т"];
+  function fmt(v) { return typeof v === "number" ? py.repr(py.F(v)) : v; }
+  function renderRows() {
+    var lines = ["rows = ["].concat(rows.map(function (r, i) {
+      return '    {"Скважина": "' + r["Скважина"] + '", "Объект": "' + r["Объект"] + '",\n     "Нефть_т": ' + fmt(r["Нефть_т"]) + "}" + (i < rows.length - 1 ? "," : "");
+    }), ["]"]);
+    EY.renderCode($("rowsCode"), lines.join("\n"), { classes: newRow >= 0 ? (function () { var c = {}; c[newRow * 2 + 1] = "active"; c[newRow * 2 + 2] = "active"; return c; })() : {} });
+  }
+  function renderDf() {
+    if (!dfMade) return;
+    $("dfEmpty").hidden = true; $("dfView").hidden = false;
+    var h = '<thead><tr><th class="idx"></th>' + COLS.map(function (c) { return "<th>" + c + "</th>"; }).join("") + "</tr></thead><tbody>";
+    h += rows.map(function (r, i) {
+      return '<tr class="' + (i === newRow ? "new" : "") + '"><td class="idx">' + i + "</td><td>" + r["Скважина"] + "</td><td>" + r["Объект"] + '</td><td class="num">' + fmt(r["Нефть_т"]) + "</td></tr>";
+    }).join("") + "</tbody>";
+    $("dfTable").innerHTML = h;
+    $("dfShape").textContent = "(" + rows.length + ", 3)";
+    $("dfTypes").textContent = ">>> df.dtypes\nСкважина        str\nОбъект          str\nНефть_т     float64";
+  }
+  $("btnDf").addEventListener("click", function () {
+    dfMade = true; newRow = -1; renderDf();
+    var t = $("dfView"); if (t.animate) t.animate([{ opacity: 0, transform: "translateX(-24px)" }, { opacity: 1, transform: "none" }], { duration: 450, easing: "ease-out" });
+  });
+  $("btnAddRow").addEventListener("click", function () {
+    if (rows.length >= POOL.length) { rows = POOL.slice(0, 3); newRow = -1; }
+    else { rows.push(POOL[rows.length]); newRow = rows.length - 1; }
+    renderRows(); renderDf();
+  });
+  renderRows();
+})();
+</script>
+</body>
+</html>

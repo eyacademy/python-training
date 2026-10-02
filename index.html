@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Python-аналитика с ИИ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Onest:wght@400;500;600;700&family=Unbounded:wght@500;700&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%22-13 0 1195 1195%22%3E%3Cstyle%3E.l%7Bfill:%232E2E38%7D%40media %28prefers-color-scheme:dark%29%7B.l%7Bfill:%23fff%7D%7D%3C/style%3E%3Cpath fill=%22%23FFE600%22 d=%22M0 427 1168 0v220z%22/%3E%3Cpath class=%22l%22 d=%22M10 604h335l79 136H187v97h214v124H187v97h296v136H10zM401 604h195l101 192 100-192h193L784 961v233H607V961z%22/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<style>
+  .intro { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 48px; align-items: center; padding-block: 28px 8px; }
+  @media (max-width: 1000px) { .intro { grid-template-columns: 1fr; } }
+  .intro h1 { font-size: clamp(2.4rem, 4.6vw, 4rem); }
+  .formula { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-family: var(--f-display); font-weight: 500; font-size: 1.1rem; }
+  .formula .arr { color: var(--muted); font-family: var(--f-body); }
+  .demo { background: var(--code-bg); border-radius: 14px; padding: 22px 24px; display: grid; gap: 16px; }
+  .demo .code { padding: 0; font-size: 1rem; }
+  .demo .boxes { min-height: 120px; justify-content: flex-start; }
+  .demo .vbox .v-type { color: #B9B9C8; }
+  .demo-cap { color: #B9B9C8; font-size: 0.85rem; }
+  .group { margin-top: 56px; display: grid; gap: 18px; }
+  .group-head { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+  .group-head h2 { font-size: 1.3rem; }
+  .group-head span { color: var(--muted); font-size: 0.92rem; }
+  .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+  .cards-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @media (max-width: 1100px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 700px) { .cards { grid-template-columns: 1fr; } }
+  .card { display: grid; grid-template-rows: auto auto 1fr auto; gap: 10px; text-decoration: none; color: var(--ink); background: var(--surface); border: 2px solid var(--line); border-radius: 14px; padding: 22px 22px 18px; transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease; }
+  .card:hover, .card:focus-visible { border-color: var(--ink); transform: translateY(-3px); box-shadow: 0 12px 26px rgba(46,46,56,0.12); }
+  .card .top { display: flex; justify-content: space-between; align-items: center; }
+  .card .n { font-family: var(--f-display); font-weight: 700; font-size: 1.9rem; line-height: 1; }
+  .card:hover .n { background: linear-gradient(transparent 55%, var(--yellow) 55%, var(--yellow) 92%, transparent 92%); }
+  .card .file { font-family: var(--f-mono); font-size: 0.72rem; color: var(--muted); }
+  .card h3 { font-size: 1.2rem; }
+  .card .meta { font-size: 0.92rem; color: var(--ink-2); }
+  .card .inter { font-size: 0.82rem; color: var(--muted); border-top: 1px solid var(--line-2); padding-top: 10px; }
+  .card .inter b { color: var(--ink); font-weight: 600; }
+  .howto { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+  @media (max-width: 900px) { .howto { grid-template-columns: 1fr; } }
+  .howto .panel { display: grid; gap: 8px; align-content: start; }
+</style>
+</head>
+<body data-page="0">
+<header id="site-header"></header>
+
+<main class="wrap">
+  <div class="intro">
+    <div class="stack">
+      <div class="eyebrow"><span class="pill">EY Академия бизнеса</span><span>тренинг для аналитиков ТШО · 2 дня</span></div>
+      <h1>Python-аналитика с&nbsp;ИИ</h1>
+      <p class="lead">Интерактивный справочник к тренингу. Одиннадцать тем, в каждой простое объяснение, метафора, живой пример, код, типичная ошибка и готовый промпт для ИИ.</p>
+      <div class="formula" aria-label="Формула дня">
+        <span class="hl">сформулировал</span><span class="arr">→</span><span>получил код</span><span class="arr">→</span><span class="hl">прочитал и проверил</span><span class="arr">→</span><span>адаптировал</span>
+      </div>
+    </div>
+    <div class="demo" aria-label="Пример: переменная как коробка">
+      <pre class="code" id="demoCode"></pre>
+      <div class="boxes" id="demoBoxes"></div>
+      <span class="demo-cap" id="demoCap">Переменная это коробка с этикеткой. Смотрите, как меняется содержимое.</span>
+    </div>
+  </div>
+
+  <section class="group">
+    <div class="group-head"><h2>Python для чтения кода</h2><span>День 1, до обеда</span></div>
+    <div class="cards">
+      <a class="card" href="01_переменные.html"><div class="top"><span class="n">1</span><span class="file">01_переменные</span></div><h3>Переменные</h3><p class="meta">Коробка с этикеткой: имя и содержимое.</p><p class="inter"><b>Интерактив:</b> симулятор памяти, код по шагам, панель type()</p></a>
+      <a class="card" href="02_типы_данных.html"><div class="top"><span class="n">2</span><span class="file">02_типы_данных</span></div><h3>Типы данных</h3><p class="meta">Что за предмет в коробке: int, float, str, bool.</p><p class="inter"><b>Интерактив:</b> «что получится» с "10" + "5", преобразования int, float, str</p></a>
+      <a class="card" href="03_функции.html"><div class="top"><span class="n">3</span><span class="file">03_функции</span></div><h3>Функции</h3><p class="meta">Кофемашина: вход, рецепт, выход через return.</p><p class="inter"><b>Интерактив:</b> вызов функции с анимацией, print против return, точка входа main()</p></a>
+      <a class="card" href="04_условия_и_циклы.html"><div class="top"><span class="n">4</span><span class="file">04_условия_и_циклы</span></div><h3>Условия и циклы</h3><p class="meta">Развилка на дороге и обход полки.</p><p class="inter"><b>Интерактив:</b> ползунок давления, цикл for по скважинам, бесконечный while и Ctrl+C</p></a>
+      <a class="card" href="05_списки_и_словари.html"><div class="top"><span class="n">5</span><span class="file">05_списки_и_словари</span></div><h3>Списки и словари</h3><p class="meta">Полка с номерами с нуля и картотека по ключам.</p><p class="inter"><b>Интерактив:</b> индексы и срезы, record["нефть"], список словарей в DataFrame</p></a>
+      <a class="card" href="06_ошибки.html"><div class="top"><span class="n">6</span><span class="file">06_ошибки</span></div><h3>Ошибки и traceback</h3><p class="meta">Записка от Python: читаем снизу вверх.</p><p class="inter"><b>Интерактив:</b> галерея 7 ошибок с подсветкой «что» и «где», тренажёр из 5 записок</p></a>
+    </div>
+  </section>
+
+  <section class="group">
+    <div class="group-head"><h2>Файлы, библиотеки и pandas</h2><span>День 1 после обеда и весь День 2</span></div>
+    <div class="cards">
+      <a class="card" href="07_файлы_и_пути.html"><div class="top"><span class="n">7</span><span class="file">07_файлы_и_пути</span></div><h3>Файлы и пути</h3><p class="meta">Память против диска: переменные исчезают, файл остаётся.</p><p class="inter"><b>Интерактив:</b> запуск и закрытие программы, дерево проекта и пути, with open</p></a>
+      <a class="card" href="08_библиотеки_и_окружения.html"><div class="top"><span class="n">8</span><span class="file">08_библиотеки_и_окружения</span></div><h3>Библиотеки и окружения</h3><p class="meta">Ящики с инструментами и отдельный набор ящиков под проект.</p><p class="inter"><b>Интерактив:</b> эмулятор терминала, три окружения, команды для Windows и macOS</p></a>
+      <a class="card" href="09_pandas_dataframe.html"><div class="top"><span class="n">9</span><span class="file">09_pandas_dataframe</span></div><h3>Pandas и DataFrame</h3><p class="meta">Лист Excel в памяти, groupby как сводная таблица.</p><p class="inter"><b>Интерактив:</b> 7 шагов очистки от read_excel до to_excel, фильтр, merge как ВПР</p></a>
+    </div>
+  </section>
+
+  <section class="group">
+    <div class="group-head"><h2>Стиль кода и работа с ИИ</h2><span>сквозные темы обоих дней</span></div>
+    <div class="cards cards-2">
+      <a class="card" href="10_pep8_и_современный_python.html"><div class="top"><span class="n">10</span><span class="file">10_pep8_и_современный_python</span></div><h3>PEP 8 и современный Python</h3><p class="meta">Шаблон оформления и ruff как кнопка «применить».</p><p class="inter"><b>Интерактив:</b> шторка до и после, f-строки, что нового в 3.13 и 3.14</p></a>
+      <a class="card" href="11_работа_с_ии.html"><div class="top"><span class="n">11</span><span class="file">11_работа_с_ии</span></div><h3>Работа с ИИ</h3><p class="meta">Быстрый стажёр, которому нужно чёткое ТЗ.</p><p class="inter"><b>Интерактив:</b> конструктор промпта, чек-лист проверки, обезличивание данных</p></a>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="block-head"><span class="tag">Как пользоваться</span><h2>Для тренера и участников</h2></div>
+    <div class="howto">
+      <div class="panel"><b>На экране через Zoom</b><span class="muted">Откройте страницу темы и покажите интерактив. Если текст мелкий, увеличьте масштаб: <kbd>Ctrl</kbd> и <kbd>+</kbd> (на macOS <kbd>Cmd</kbd> и <kbd>+</kbd>). Вёрстка рассчитана на ширину от 1280 пикселей.</span></div>
+      <div class="panel"><b>Порядок на каждой странице</b><span class="muted">Объяснение и метафора, интерактив, как это выглядит в коде, типичная ошибка, промпт для ИИ с кнопкой копирования.</span></div>
+      <div class="panel"><b>Без интернета</b><span class="muted">Сайт работает из папки: двойной щелчок по index.html. Без интернета пропадут только фирменные шрифты, всё остальное работает.</span></div>
+    </div>
+  </section>
+</main>
+
+<p class="foot-note" style="margin-top:56px">Данные условные, названия объектов вымышлены. Тренинг «Python-аналитика с ИИ», EY.</p>
+
+<script src="app.js"></script>
+<script>
+(function () {
+  var code = document.getElementById("demoCode"), boxes = document.getElementById("demoBoxes"), cap = document.getElementById("demoCap");
+  var LINES = ['oil = 1650', 'oil = 1720', 'well = "T-101"'];
+  var env = {}, order = [], i = 0;
+  EY.renderCode(code, LINES.join("\n"));
+  function draw(changed, old) {
+    boxes.innerHTML = order.map(function (n) {
+      var v = env[n], isCh = n === changed;
+      return '<div class="vbox' + (isCh && old === undefined ? " new" : "") + (isCh && old !== undefined ? " flash" : "") + '"><div class="v-label">' + n + '</div><div class="v-body t-' + v.t + '">' +
+        (isCh && old !== undefined ? '<span class="v-old">' + EY.esc(EY.py.repr(old)) + "</span>" : "") + '<span class="v-val' + (isCh ? " drop" : "") + '">' + EY.esc(EY.py.repr(v)) + '</span></div><div class="v-type">' + v.t + "</div></div>";
+    }).join("");
+  }
+  var CAPS = ["Создали коробку oil и положили 1650.", "Этикетка та же, содержимое другое: 1650 выбросили, положили 1720.", "Новая коробка well с текстом внутри. Тип str."];
+  function tick() {
+    if (i >= LINES.length) { i = 0; env = {}; order = []; boxes.innerHTML = ""; cap.textContent = "Сначала."; EY.setActive(code, -1); return; }
+    var res = EY.py.execLine(LINES[i], env, []);
+    var n = res.names[0];
+    if (order.indexOf(n) < 0) order.push(n);
+    draw(n, res.old[0]);
+    EY.setActive(code, i);
+    cap.textContent = CAPS[i];
+    i++;
+  }
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduce) { tick(); tick(); tick(); }
+  else { tick(); setInterval(tick, 2200); }
+})();
+</script>
+</body>
+</html>

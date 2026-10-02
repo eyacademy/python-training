@@ -1,0 +1,17 @@
+<div id="eyp" style="padding-top:max(84px,11vh);background:#fff">
+<iframe id="eyp-frame" src="https://eyacademy.github.io/python-training/" title="Python-аналитика с ИИ" style="display:block;width:100%;height:900px;border:0"></iframe>
+</div>
+<script>
+(function () {
+  var f = document.getElementById("eyp-frame"), first = true;
+  window.addEventListener("message", function (e) {
+    if (e.origin !== "https://eyacademy.github.io" || !e.data || e.data.eyPython !== "height") return;
+    f.style.height = e.data.h + "px";
+  });
+  // A click to another topic inside the frame: scroll the Tilda page back to the top of the site.
+  f.addEventListener("load", function () {
+    if (first) { first = false; return; }
+    window.scrollTo({ top: document.getElementById("eyp").getBoundingClientRect().top + window.pageYOffset });
+  });
+})();
+</script>

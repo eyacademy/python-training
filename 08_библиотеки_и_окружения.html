@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Библиотеки и окружения</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Onest:wght@400;500;600;700&family=Unbounded:wght@500;700&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%22-13 0 1195 1195%22%3E%3Cstyle%3E.l%7Bfill:%232E2E38%7D%40media %28prefers-color-scheme:dark%29%7B.l%7Bfill:%23fff%7D%7D%3C/style%3E%3Cpath fill=%22%23FFE600%22 d=%22M0 427 1168 0v220z%22/%3E%3Cpath class=%22l%22 d=%22M10 604h335l79 136H187v97h214v124H187v97h296v136H10zM401 604h195l101 192 100-192h193L784 961v233H607V961z%22/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<style>
+  .os-switch { display: inline-flex; border: 2px solid var(--ink); border-radius: 10px; overflow: hidden; }
+  .os-switch button { font: inherit; font-weight: 600; padding: 9px 18px; border: 0; background: var(--surface); cursor: pointer; }
+  .os-switch button.is-on { background: var(--ink); color: var(--yellow); }
+  .envs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+  @media (max-width: 1000px) { .envs { grid-template-columns: 1fr; } }
+  .env { font: inherit; text-align: left; color: var(--ink); cursor: pointer; border: 2px solid var(--line); border-radius: 12px; background: var(--surface); padding: 0; overflow: hidden; display: grid; align-content: start; transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease; }
+  .env:hover { border-color: var(--ink); }
+  .env.is-on { border-color: var(--ink); box-shadow: 0 10px 24px rgba(46,46,56,0.14); transform: translateY(-3px); }
+  .env-top { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--line-2); gap: 10px; }
+  .env.is-on .env-top { background: var(--ink); color: #fff; }
+  .env-name { font-family: var(--f-mono); font-weight: 700; font-size: 1rem; }
+  .env.is-on .env-name { color: var(--yellow); }
+  .env-badge { font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; background: var(--yellow); color: var(--ink); visibility: hidden; }
+  .env.is-on .env-badge { visibility: visible; }
+  .env-body { padding: 14px 16px 16px; display: grid; gap: 10px; }
+  .env-desc { font-size: 0.85rem; color: var(--muted); }
+  .tools { display: flex; flex-wrap: wrap; gap: 8px; min-height: 76px; align-content: flex-start; }
+  .tool { font-family: var(--f-mono); font-size: 0.8rem; font-weight: 600; padding: 5px 10px; border: 2px solid var(--ink); border-radius: 6px; background: #F0E4CE; box-shadow: inset 0 -4px 0 rgba(46,46,56,0.12); }
+  .tool.py { background: var(--ink); color: var(--yellow); }
+  .tool.new { animation: pop 0.5s ease; background: var(--yellow); }
+  .term { background: #1F1F27; color: #E6E6EE; border-radius: var(--r); font-family: var(--f-mono); font-size: 0.9rem; line-height: 1.6; overflow: hidden; }
+  .term-bar { display: flex; align-items: center; gap: 8px; padding: 9px 14px; background: #2E2E38; color: #B9B9C8; font-size: 0.78rem; }
+  .term-bar i { width: 11px; height: 11px; border-radius: 50%; background: #55556A; display: inline-block; }
+  .term-body { padding: 14px 18px; height: 300px; overflow-y: auto; white-space: pre-wrap; }
+  .term .pr { color: var(--yellow); }
+  .term .ok { color: #9FE0A6; }
+  .term .er { color: #FF8F84; }
+  .term .mu { color: #8E8EA2; }
+  .term-in { display: flex; align-items: center; gap: 8px; padding: 10px 18px 14px; border-top: 1px solid #34343F; }
+  .term-in .pr { white-space: nowrap; }
+  .term-in input { flex: 1; background: transparent; border: 0; color: #fff; font-family: var(--f-mono); font-size: 0.9rem; padding: 4px 0; }
+  .term-in input:focus { outline: none; box-shadow: none; }
+  .cmds { display: flex; flex-wrap: wrap; gap: 8px; }
+  .cmd-list { display: grid; gap: 10px; }
+  .cmd-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; }
+  .cmd-row code.c { font-family: var(--f-mono); font-size: 0.9rem; background: none; border: 0; padding: 0; white-space: pre-wrap; word-break: break-all; }
+  .cmd-row .d { font-size: 0.82rem; color: var(--muted); grid-column: 1; }
+  .cmd-group h3 { margin-bottom: 10px; }
+  .cmp-table td:first-child { font-weight: 700; white-space: nowrap; }
+  .cmp-table th:not(:first-child) { font-family: var(--f-mono); font-size: 0.95rem; text-transform: none; letter-spacing: 0; color: var(--ink); }
+  .steps { counter-reset: s; display: grid; gap: 12px; }
+  .step { display: grid; grid-template-columns: 42px 1fr; gap: 14px; align-items: start; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; }
+  .step::before { counter-increment: s; content: counter(s); width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: var(--yellow); border: 2px solid var(--ink); font-family: var(--f-mono); font-weight: 700; }
+</style>
+</head>
+<body data-page="8">
+<header id="site-header"></header>
+
+<main class="wrap">
+  <div class="hero">
+    <div class="eyebrow"><span class="pill">Тема 8</span><span>День 1 · Импорт библиотек и установка зависимостей</span></div>
+    <h1>Библиотеки и окружения</h1>
+    <p class="lead">Библиотека (library, пакет) это готовый код, который написали другие: pandas читает Excel, matplotlib рисует графики. Окружение (environment) это отдельная папка со своим Python и своим набором библиотек под конкретный проект.</p>
+    <div class="metaphor">
+      <span class="m-label">Метафора</span>
+      <p>Библиотека это <b>ящик с готовыми инструментами</b>, <code>import</code> значит «достать ящик». Окружение это <b>отдельный набор ящиков под проект</b>, чтобы проекты не мешали друг другу: в одном pandas 3, в старом отчёте pandas 2, и оба работают.</p>
+    </div>
+  </div>
+
+  <section class="block" id="envs">
+    <div class="block-head">
+      <span class="tag">Интерактив</span>
+      <h2>Три окружения на одном ноутбуке</h2>
+      <p>Щёлкните по окружению, чтобы активировать его. Потом пробуйте команды: готовыми кнопками или пишите в терминал сами. Установка кладёт ящик только в активное окружение.</p>
+    </div>
+    <div class="btn-row"><span class="small muted">Система:</span>
+      <div class="os-switch" role="group" aria-label="Операционная система"><button data-os="win" class="is-on">Windows</button><button data-os="mac">macOS</button></div>
+    </div>
+    <div class="envs" id="envCards"></div>
+    <div class="split">
+      <div class="term">
+        <div class="term-bar"><i></i><i></i><i></i><span id="termTitle">Anaconda Prompt (miniconda3)</span></div>
+        <div class="term-body" id="termBody"></div>
+        <div class="term-in"><span class="pr" id="termPrompt"></span><input id="termInput" type="text" spellcheck="false" autocomplete="off" aria-label="Команда терминала" placeholder="введите команду и Enter"></div>
+      </div>
+      <div class="stack">
+        <div class="panel-title">Попробуйте по порядку</div>
+        <div class="cmds" id="quickCmds"></div>
+        <div class="note" id="termNote">Сейчас активно окружение <b>base</b>. В нём нет pandas. Нажмите <code>import pandas</code> и посмотрите на ошибку.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="commands">
+    <div class="block-head">
+      <span class="tag">Шпаргалка</span>
+      <h2>Команды для <span id="osName">Windows</span></h2>
+      <p id="osHint"></p>
+    </div>
+    <div class="grid-2">
+      <div class="cmd-group"><h3>conda (Miniconda, Miniforge)</h3><div class="cmd-list" id="cmdConda"></div></div>
+      <div class="cmd-group"><h3>uv и pip</h3><div class="cmd-list" id="cmdUv"></div></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <span class="tag">Сравнение</span>
+      <h2>pip, conda и uv</h2>
+    </div>
+    <div class="table-wrap">
+      <table class="t cmp-table">
+        <thead><tr><th></th><th>pip</th><th>conda</th><th>uv</th></tr></thead>
+        <tbody>
+          <tr><td>Что ставит</td><td>Только Python-пакеты в уже готовое окружение</td><td>Сам Python, Python-пакеты и системные библиотеки, которые им нужны</td><td>Сам Python и Python-пакеты, создаёт папку <code>.venv</code> и файл <code>uv.lock</code> с точными версиями</td></tr>
+          <tr><td>Откуда</td><td>PyPI (pypi.org)</td><td>Каналы conda-forge (бесплатно) или defaults от Anaconda (для организаций от 200 человек нужна платная лицензия)</td><td>PyPI, как pip, но в 10-100 раз быстрее</td></tr>
+          <tr><td>Когда выбирать</td><td>Нужно доставить один пакет в окружение, которое уже есть</td><td>Корпоративный ноутбук, установка через Miniconda с каналом conda-forge (или Miniforge). Основной вариант на тренинге</td><td>Новый проект, где важны скорость и одинаковые версии у всех. <code>uv run otchet.py</code> сам поставит всё нужное</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small muted">Про лицензию. Канал defaults компании Anaconda бесплатен для личного использования и организаций до 200 сотрудников. Поэтому сразу после установки Miniconda переключаем канал на бесплатный conda-forge (три команды из гайда), и вопрос снимается на любом ноутбуке. Вариант Б: Miniforge, там conda-forge уже включён. Второй бесплатный путь: uv.</p>
+  </section>
+
+  <section class="block" id="missing">
+    <div class="block-head">
+      <span class="tag">Как понять, что библиотека не установлена</span>
+      <h2>ModuleNotFoundError: что делать по шагам</h2>
+      <p>Сообщение <code>ModuleNotFoundError: No module named 'openpyxl'</code> значит: в окружении, которое сейчас запускает код, такого ящика нет. Код при этом может быть правильным.</p>
+    </div>
+    <div class="split">
+      <div class="steps">
+        <div class="step"><div><b>Проверьте, какое окружение активно.</b><br><span class="muted">В терминале слева в скобках имя: <code>(ey)</code>. В VS Code внизу справа версия Python, щелчок по ней или команда «Python: Select Interpreter».</span></div></div>
+        <div class="step"><div><b>Проверьте пакет одной командой.</b><br><code>python -c "import openpyxl; print(openpyxl.__version__)"</code></div></div>
+        <div class="step"><div><b>Установите в это окружение.</b><br><code>conda install -c conda-forge openpyxl</code> или <code>pip install openpyxl</code></div></div>
+        <div class="step"><div><b>Перезапустите.</b><br><span class="muted">В Jupyter: Restart kernel. В терминале запустите скрипт заново.</span></div></div>
+      </div>
+      <div class="stack">
+        <div class="panel-title">Имя при установке может отличаться от имени в import</div>
+        <div class="table-wrap">
+          <table class="t"><thead><tr><th>В коде</th><th>Устанавливать</th></tr></thead><tbody>
+            <tr><td><code>import sklearn</code></td><td><code>scikit-learn</code></td></tr>
+            <tr><td><code>import cv2</code></td><td><code>opencv-python</code></td></tr>
+            <tr><td><code>from PIL import Image</code></td><td><code>pillow</code></td></tr>
+            <tr><td><code>import yaml</code></td><td><code>pyyaml</code></td></tr>
+            <tr><td><code>import docx</code></td><td><code>python-docx</code></td></tr>
+          </tbody></table>
+        </div>
+        <pre data-hl>import pandas as pd                # ящик pandas под коротким именем pd
+import matplotlib.pyplot as plt    # из ящика matplotlib достали pyplot
+from pathlib import Path           # pathlib уже есть в Python, ставить не нужно</pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="block mistake">
+    <div class="block-head">
+      <span class="tag">Типичная ошибка</span>
+      <h2>pip install внутри Python или не в том окружении</h2>
+    </div>
+    <div class="pair">
+      <div><div class="bad-label">Так не работает</div>
+<pre data-hl="plain">&gt;&gt;&gt; pip install pandas
+  File "&lt;python-input-0&gt;", line 1
+    pip install pandas
+        ^^^^^^^
+SyntaxError: invalid syntax</pre></div>
+      <div><div class="good-label">Так работает</div>
+<pre data-hl="plain"># в терминале, не в Python:
+(ey) C:\Users\aigerim\ey_python&gt; conda install pandas
+
+# в ячейке Jupyter:
+%pip install pandas</pre></div>
+    </div>
+    <p>Команды установки пишут в терминал, а не в интерпретатор Python с приглашением <code>&gt;&gt;&gt;</code>. Вторая частая беда: пакет поставили в base, а VS Code запускает окружение ey. Смотрите на имя в скобках перед приглашением.</p>
+  </section>
+
+  <section class="block ask">
+    <div class="block-head">
+      <span class="tag">Спроси ИИ</span>
+      <h2>Попросите список зависимостей для скрипта</h2>
+    </div>
+<pre class="prompt-box" id="prompt8">Посмотри на этот скрипт и составь список библиотек, которые нужно установить.
+Для каждой укажи: имя для import, имя для установки, зачем она здесь.
+Дай три варианта установки: conda (канал conda-forge, окружение ey, Python 3.14), pip и uv add.
+Отдельно отметь модули, которые уже встроены в Python и не требуют установки.
+Мои условия: Windows, корпоративный ноутбук, Miniconda с каналом conda-forge.
+
+&lt;вставьте код&gt;</pre>
+    <div class="btn-row"><button class="btn primary" data-copy="#prompt8">Скопировать промпт</button></div>
+  </section>
+</main>
+
+<nav id="pager"></nav>
+<p class="foot-note">Данные условные, названия объектов вымышлены. Тренинг «Python-аналитика с ИИ», EY.</p>
+
+<script src="app.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var ENVS = {
+    base: { py: "3.14", desc: "Создаётся при установке Miniconda. Сюда ничего не ставим.", pkgs: { pip: "25.2", conda: "25.7" } },
+    ey: { py: "3.14", desc: "Окружение тренинга. Всё для отчёта по добыче.", pkgs: { pandas: "3.0.6", numpy: "2.5.3", matplotlib: "3.11.2", openpyxl: "3.1.5", jupyter: "1.1.1" } },
+    old_report: { py: "3.11", desc: "Старый отчёт коллеги. Работает только с pandas 2.", pkgs: { pandas: "2.2.3", numpy: "1.26.4", requests: "2.32.3" } }
+  };
+  var AVAILABLE = { seaborn: "0.13.2", openpyxl: "3.1.5", pandas: "3.0.6", numpy: "2.5.3", matplotlib: "3.11.2", requests: "2.32.5", jupyter: "1.1.1", ruff: "0.16.8", "scikit-learn": "1.8.0", pyyaml: "6.0.3" };
+  var IMPORT_TO_PKG = { sklearn: "scikit-learn", yaml: "pyyaml" };
+  var BUILTIN = ["pathlib", "json", "csv", "datetime", "math", "os", "sys"];
+  var active = "base", os = "win", justAdded = null;
+  var termBody = $("termBody"), termInput = $("termInput");
+
+  function prompt() {
+    if (os === "win") return "(" + active + ") C:\\Users\\aigerim\\ey_python>";
+    return "(" + active + ") aigerim@MacBook ey_python %";
+  }
+  function renderEnvs() {
+    $("envCards").innerHTML = Object.keys(ENVS).map(function (name) {
+      var e = ENVS[name];
+      var tools = '<span class="tool py">python ' + e.py + "</span>" + Object.keys(e.pkgs).map(function (p) {
+        return '<span class="tool' + (justAdded && justAdded[0] === name && justAdded[1].indexOf(p) >= 0 ? " new" : "") + '">' + p + " " + e.pkgs[p] + "</span>";
+      }).join("");
+      return '<button class="env' + (name === active ? " is-on" : "") + '" data-env="' + name + '"><div class="env-top"><span class="env-name">' + name + '</span><span class="env-badge">активно</span></div><div class="env-body"><div class="env-desc">' + EY.esc(e.desc) + '</div><div class="tools">' + tools + "</div></div></button>";
+    }).join("");
+    justAdded = null;
+    document.querySelectorAll("[data-env]").forEach(function (b) {
+      b.addEventListener("click", function () { runCmd("conda activate " + b.getAttribute("data-env"), true); });
+    });
+    $("termPrompt").textContent = prompt();
+  }
+  function print(html) { termBody.insertAdjacentHTML("beforeend", html + "\n"); termBody.scrollTop = termBody.scrollHeight; }
+  function note(html) { $("termNote").innerHTML = html; }
+  function installPkgs(pkgs, tool) {
+    var env = ENVS[active], added = [], out = [];
+    pkgs.forEach(function (p) {
+      p = p.toLowerCase().replace(/==.*$/, "");
+      if (!AVAILABLE[p]) { out.push('<span class="er">' + (tool === "conda" ? "PackagesNotFoundError: The following packages are not available from current channels:\n  - " + EY.esc(p) : "ERROR: No matching distribution found for " + EY.esc(p)) + "</span>"); return; }
+      if (env.pkgs[p]) { out.push('<span class="mu">Requirement already satisfied: ' + p + " " + env.pkgs[p] + "</span>"); return; }
+      env.pkgs[p] = AVAILABLE[p]; added.push(p);
+    });
+    if (added.length) {
+      if (tool === "conda") out.unshift('<span class="mu">Channels:\n - conda-forge\nSolving environment: done\n\nThe following NEW packages will be INSTALLED:\n' + added.map(function (p) { return "  " + p + "  conda-forge/noarch::" + p + "-" + AVAILABLE[p]; }).join("\n") + "\n\nProceed ([y]/n)? y\n</span>" + '<span class="ok">Executing transaction: done</span>');
+      else if (tool === "uv") out.unshift('<span class="mu">Resolved 34 packages in 180ms\nInstalled ' + added.length + " package" + (added.length > 1 ? "s" : "") + " in 95ms</span>\n" + added.map(function (p) { return '<span class="ok"> + ' + p + "==" + AVAILABLE[p] + "</span>"; }).join("\n"));
+      else out.unshift('<span class="mu">Collecting ' + added.join(" ") + "\n  Downloading " + added[0] + "-" + AVAILABLE[added[0]] + "-py3-none-any.whl</span>\n" + '<span class="ok">Successfully installed ' + added.map(function (p) { return p + "-" + AVAILABLE[p]; }).join(" ") + "</span>");
+      justAdded = [active, added];
+    }
+    print(out.join("\n"));
+    renderEnvs();
+    if (added.length) note("Ящик <b>" + added.join(", ") + "</b> появился только в окружении <b>" + active + "</b>. В других окружениях его по-прежнему нет.");
+  }
+  function runCmd(cmd, fromCard) {
+    cmd = cmd.trim();
+    if (!cmd) return;
+    print('<span class="pr">' + EY.esc(prompt()) + "</span> " + EY.esc(cmd));
+    var m;
+    if (/^(clear|cls)$/.test(cmd)) { termBody.innerHTML = ""; return; }
+    if ((m = /^conda activate\s+(\S+)$/.exec(cmd))) {
+      if (!ENVS[m[1]]) { print('<span class="er">EnvironmentNameNotFound: Could not find conda environment: ' + EY.esc(m[1]) + "\nYou can list all discoverable environments with `conda info --envs`.</span>"); note("Такого окружения нет. Посмотрите список: <code>conda env list</code>."); return; }
+      active = m[1]; renderEnvs();
+      note("Активно окружение <b>" + active + "</b>. Имя в скобках перед приглашением показывает, какие ящики сейчас доступны.");
+      return;
+    }
+    if (/^conda deactivate$/.test(cmd)) { active = "base"; renderEnvs(); note("Вернулись в base."); return; }
+    if (/^conda (env list|info --envs)$/.test(cmd)) {
+      print('<span class="mu"># conda environments:\n#</span>\n' + Object.keys(ENVS).map(function (n) { var p = os === "win" ? "C:\\Users\\aigerim\\miniconda3" + (n === "base" ? "" : "\\envs\\" + n) : "/Users/aigerim/miniconda3" + (n === "base" ? "" : "/envs/" + n); return (n + "                 ").slice(0, 14) + (n === active ? "*  " : "   ") + p; }).join("\n"));
+      return;
+    }
+    if ((m = /^conda create -n\s+(\S+)(?:\s+python=(\S+))?(?:\s+-y)?$/.exec(cmd))) {
+      ENVS[m[1]] = { py: m[2] || "3.14", desc: "Новое окружение, пока без библиотек.", pkgs: {} };
+      print('<span class="mu">Channels:\n - conda-forge\nSolving environment: done</span>\n<span class="ok">done\n#\n# To activate this environment, use\n#\n#     $ conda activate ' + EY.esc(m[1]) + "</span>");
+      renderEnvs(); note("Создали пустое окружение <b>" + EY.esc(m[1]) + "</b>. Чтобы им пользоваться, активируйте его."); return;
+    }
+    if ((m = /^conda install(?:\s+-c\s+conda-forge)?(?:\s+-y)?\s+(.+)$/.exec(cmd))) { installPkgs(m[1].split(/\s+/).filter(function (x) { return x !== "-y"; }), "conda"); return; }
+    if ((m = /^pip install\s+(.+)$/.exec(cmd))) { installPkgs(m[1].split(/\s+/), "pip"); return; }
+    if ((m = /^uv add\s+(.+)$/.exec(cmd))) { installPkgs(m[1].split(/\s+/), "uv"); return; }
+    if (/^(conda list|pip list)$/.test(cmd)) {
+      var e = ENVS[active];
+      print('<span class="mu">Package        Version\n-------------- -------</span>\n' + Object.keys(e.pkgs).concat(["python"]).map(function (p) { return (p + "               ").slice(0, 15) + (p === "python" ? e.py : e.pkgs[p]); }).join("\n"));
+      return;
+    }
+    if ((m = /^(?:python3?|py) -c ["']import (\w+)(?:\s+as\s+\w+)?(?:;.*)?["']$/.exec(cmd))) {
+      var mod = m[1], pkg = IMPORT_TO_PKG[mod] || mod, env2 = ENVS[active];
+      if (BUILTIN.indexOf(mod) >= 0) { print('<span class="ok">ок: ' + mod + " встроен в Python, ставить не нужно</span>"); return; }
+      if (env2.pkgs[pkg]) { print('<span class="ok">' + env2.pkgs[pkg] + "</span>"); note("В окружении <b>" + active + "</b> есть " + pkg + " версии " + env2.pkgs[pkg] + "."); return; }
+      print('<span class="er">Traceback (most recent call last):\n  File "&lt;string&gt;", line 1, in &lt;module&gt;\n    import ' + EY.esc(mod) + "\nModuleNotFoundError: No module named '" + EY.esc(mod) + "'</span>");
+      note("В окружении <b>" + active + "</b> нет ящика <b>" + EY.esc(pkg) + "</b>. Либо активируйте окружение, где он есть, либо установите: <code>conda install " + EY.esc(pkg) + "</code>.");
+      return;
+    }
+    if (/^(?:python3?|py|uv run) otchet\.py$/.test(cmd)) {
+      var en = ENVS[active];
+      if (/^uv run/.test(cmd)) { print('<span class="mu">Using CPython 3.14.6\nCreating virtual environment at: .venv\nInstalled 12 packages in 140ms</span>\n<span class="ok">Строк: 1837\nОтчёт сохранён: результаты\\отчёт_добыча_2026.xlsx</span>'); note("<code>uv run</code> сам создал окружение .venv по файлу pyproject.toml и запустил скрипт."); return; }
+      var need = ["pandas", "openpyxl"].filter(function (p) { return !en.pkgs[p]; });
+      if (need.length) { print('<span class="er">Traceback (most recent call last):\n  File "' + (os === "win" ? "C:\\Users\\aigerim\\ey_python\\otchet.py" : "/Users/aigerim/ey_python/otchet.py") + '", line 7, in &lt;module&gt;\n    import ' + need[0] + "\nModuleNotFoundError: No module named '" + need[0] + "'</span>"); note("Скрипту нужен " + need[0] + ", а в <b>" + active + "</b> его нет. Активируйте ey: <code>conda activate ey</code>."); return; }
+      if (en.pkgs.pandas && en.pkgs.pandas.charAt(0) === "2") { print('<span class="ok">Строк: 1837</span>\n<span class="er">FutureWarning: ... this behavior will change in pandas 3.0</span>'); note("Скрипт написан под pandas 3, а здесь pandas 2. Работает, но с предупреждениями. Поэтому у каждого проекта своё окружение."); return; }
+      print('<span class="ok">Строк: 1837\nОтчёт сохранён: результаты' + (os === "win" ? "\\" : "/") + "отчёт_добыча_2026.xlsx</span>"); note("Скрипт отработал в окружении <b>" + active + "</b>."); return;
+    }
+    if (/^>>>|^import /.test(cmd)) { print('<span class="er">Это команда Python, а не терминала. Используйте: python -c "import pandas"</span>'); return; }
+    print('<span class="er">' + (os === "win" ? "'" + EY.esc(cmd.split(" ")[0]) + "' не является внутренней или внешней командой" : "zsh: command not found: " + EY.esc(cmd.split(" ")[0])) + '</span>\n<span class="mu">Эмулятор понимает: conda activate/create/install, conda env list, pip install, uv add, python -c "import X", python otchet.py, uv run otchet.py</span>');
+  }
+
+  var QUICK = [
+    'python -c "import pandas"',
+    "conda activate ey",
+    'python -c "import pandas"',
+    'python -c "import seaborn"',
+    "conda install -c conda-forge seaborn",
+    "python otchet.py",
+    "conda activate old_report",
+    "python otchet.py",
+    "conda env list",
+    "uv run otchet.py"
+  ];
+  $("quickCmds").innerHTML = QUICK.map(function (c, i) { return '<button class="chip-btn" data-q="' + i + '">' + EY.esc(c) + "</button>"; }).join("");
+  var typing = false;
+  document.querySelectorAll("#quickCmds [data-q]").forEach(function (b) {
+    b.addEventListener("click", async function () {
+      if (typing) return; typing = true;
+      var c = QUICK[+b.getAttribute("data-q")];
+      termInput.value = "";
+      for (var i = 0; i < c.length; i++) { termInput.value += c.charAt(i); await EY.wait(18); }
+      await EY.wait(150);
+      termInput.value = ""; runCmd(c);
+      b.classList.add("is-on");
+      typing = false;
+    });
+  });
+  termInput.addEventListener("keydown", function (e) { if (e.key === "Enter") { var c = termInput.value; termInput.value = ""; runCmd(c); } });
+
+  /* шпаргалка по ОС */
+  function cmdRow(c, d) { return '<div class="cmd-row"><code class="c">' + EY.esc(c) + '</code><button class="btn small copy-btn" data-copy-text="' + EY.esc(c) + '">Копировать</button><span class="d">' + d + "</span></div>"; }
+  function renderCmds() {
+    var win = os === "win";
+    $("osName").textContent = win ? "Windows" : "macOS";
+    $("osHint").innerHTML = win ? "Команды conda пишем в <b>Anaconda Prompt (miniconda3)</b> из меню Пуск либо во встроенном терминале VS Code. Запуск Python: <code>python</code> или <code>py</code>." :
+      "Команды пишем в приложении <b>Терминал</b> или во встроенном терминале VS Code. Запуск Python: <code>python3</code> (внутри активного conda-окружения работает и <code>python</code>).";
+    $("termTitle").textContent = win ? "Anaconda Prompt (miniconda3)" : "Терминал, zsh";
+    $("cmdConda").innerHTML =
+      cmdRow("conda create -n ey python=3.14", "создать окружение ey с Python 3.14") +
+      cmdRow("conda activate ey", "включить окружение, в начале строки появится (ey)") +
+      cmdRow("conda install -c conda-forge pandas openpyxl matplotlib jupyter", "поставить библиотеки тренинга из бесплатного канала") +
+      cmdRow("conda env list", "список окружений, активное отмечено *") +
+      cmdRow("conda deactivate", "выйти из окружения");
+    $("cmdUv").innerHTML =
+      cmdRow(win ? 'powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"' : "curl -LsSf https://astral.sh/uv/install.sh | sh", "установить uv (один раз)") +
+      cmdRow("uv init", "сделать из папки проект: появится pyproject.toml") +
+      cmdRow("uv add pandas openpyxl matplotlib", "добавить библиотеки в проект") +
+      cmdRow("uv run otchet.py", "запустить скрипт, uv сам создаст .venv и поставит пакеты") +
+      cmdRow(win ? ".venv\\Scripts\\activate" : "source .venv/bin/activate", "включить окружение .venv вручную") +
+      cmdRow("pip install openpyxl", "доставить пакет в активное окружение через pip");
+    renderEnvs();
+  }
+  document.querySelectorAll("[data-os]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      os = b.getAttribute("data-os");
+      document.querySelectorAll("[data-os]").forEach(function (x) { x.classList.toggle("is-on", x === b); });
+      renderCmds();
+      print('<span class="mu">· переключились на ' + (os === "win" ? "Windows" : "macOS") + " ·</span>");
+    });
+  });
+  renderCmds();
+  print('<span class="mu">Эмулятор терминала. Команды ничего не ставят на ваш компьютер.</span>');
+})();
+</script>
+</body>
+</html>

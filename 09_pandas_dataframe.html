@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Pandas и DataFrame</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Onest:wght@400;500;600;700&family=Unbounded:wght@500;700&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%22-13 0 1195 1195%22%3E%3Cstyle%3E.l%7Bfill:%232E2E38%7D%40media %28prefers-color-scheme:dark%29%7B.l%7Bfill:%23fff%7D%7D%3C/style%3E%3Cpath fill=%22%23FFE600%22 d=%22M0 427 1168 0v220z%22/%3E%3Cpath class=%22l%22 d=%22M10 604h335l79 136H187v97h214v124H187v97h296v136H10zM401 604h195l101 192 100-192h193L784 961v233H607V961z%22/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<style>
+  .stepper { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+  @media (max-width: 1000px) { .stepper { grid-template-columns: repeat(2, 1fr); } }
+  .stepper button { font: inherit; cursor: pointer; text-align: left; padding: 10px 12px; border-radius: 8px; border: 2px solid var(--line); background: var(--surface); display: grid; gap: 2px; transition: border-color 0.2s ease, background 0.2s ease; }
+  .stepper button:hover { border-color: var(--ink); }
+  .stepper .sn { font-family: var(--f-mono); font-size: 0.72rem; color: var(--muted); font-weight: 600; }
+  .stepper .st { font-family: var(--f-mono); font-size: 0.82rem; font-weight: 700; }
+  .stepper button.done { background: var(--yellow-wash); border-color: #E7D24A; }
+  .stepper button.is-on { background: var(--yellow); border-color: var(--ink); }
+  .progress { height: 6px; background: var(--line-2); border-radius: 3px; overflow: hidden; }
+  .progress i { display: block; height: 100%; background: var(--ink); transition: width 0.5s ease; }
+  .pipe { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 20px 24px; align-items: start; }
+  .pipe .res-area { grid-column: 1 / -1; }
+  @media (max-width: 1000px) { .pipe { grid-template-columns: 1fr; } }
+  .step-note { font-size: 1rem; }
+  .excel-hint { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; background: #E6F2EA; border-radius: 8px; padding: 12px 16px; font-size: 0.92rem; }
+  .excel-hint .x { background: #217346; color: #fff; font-weight: 700; font-family: var(--f-mono); font-size: 0.8rem; border-radius: 4px; padding: 3px 8px; }
+  table.df { border-collapse: collapse; font-family: var(--f-mono); font-size: 0.86rem; width: 100%; background: var(--surface); }
+  table.df th, table.df td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; white-space: nowrap; transition: background 0.4s ease; }
+  table.df th { background: var(--ink); color: #fff; font-weight: 600; font-size: 0.8rem; }
+  table.df th.dt { font-weight: 400; color: #C9C9D4; font-size: 0.72rem; background: #45454F; }
+  table.df td.idx, table.df th.idx { background: #F0F0F3; color: var(--muted); text-align: right; width: 38px; }
+  table.df th.idx { background: var(--ink); }
+  table.df td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  table.df td.nan { color: var(--muted); font-style: italic; text-align: right; }
+  table.df td.dirty-text { background: #FFE9D6; }
+  table.df td.dirty-space { background: #FDE2F0; }
+  table.df td.dirty-nan { background: #EEF0F4; }
+  table.df tr.dup td { background: #FFF3B0; }
+  table.df td.changed { background: var(--yellow) !important; animation: flash 1s ease; }
+  table.df tr.removing td { text-decoration: line-through; opacity: 0.4; }
+  .sp { color: #C0307A; font-weight: 700; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 0.8rem; color: var(--muted); }
+  .legend span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; border: 1px solid var(--line); }
+  .legend .l1::before { background: #FFE9D6; } .legend .l2::before { background: #FDE2F0; } .legend .l3::before { background: #EEF0F4; } .legend .l4::before { background: #FFF3B0; }
+  .info-out { font-family: var(--f-mono); font-size: 0.84rem; white-space: pre; background: #FBFBFC; border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; overflow-x: auto; line-height: 1.55; }
+  .info-out .bad { background: #FFE9D6; font-weight: 700; }
+  .sheet { border: 1px solid #B7C9BC; border-radius: 6px; overflow: hidden; background: var(--surface); }
+  .sheet-bar { background: #217346; color: #fff; padding: 8px 12px; font-size: 0.85rem; font-weight: 600; display: flex; justify-content: space-between; }
+  table.xl { border-collapse: collapse; width: 100%; font-family: "Calibri", var(--f-body); font-size: 0.9rem; }
+  table.xl td, table.xl th { border: 1px solid #D4DCD6; padding: 6px 10px; }
+  table.xl th { background: #F3F5F4; color: #666; font-weight: 400; font-size: 0.78rem; text-align: center; }
+  table.xl td.rn { background: #F3F5F4; color: #666; text-align: center; width: 34px; font-size: 0.78rem; }
+  table.xl td.h { font-weight: 700; }
+  table.xl td.n { text-align: right; }
+  .sheet-tabs { display: flex; gap: 2px; background: #F3F5F4; padding: 4px 8px 0; font-size: 0.78rem; }
+  .sheet-tabs span { padding: 4px 12px; background: var(--surface); border: 1px solid #D4DCD6; border-bottom: 0; border-radius: 4px 4px 0 0; color: #217346; font-weight: 700; }
+  .wrong { display: grid; gap: 8px; }
+  .res-area { display: grid; gap: 14px; }
+  .res-area .enter { animation: rise 0.45s ease; }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .xl-map td:first-child { font-weight: 600; }
+  .xl-map td:nth-child(2) code { white-space: normal; }
+  .filter-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .merge { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr) minmax(0, 1.3fr); gap: 16px; align-items: start; }
+  @media (max-width: 1000px) { .merge { grid-template-columns: 1fr; } }
+  table.df td.key { background: #E8EEFB; }
+  table.df td.joined { background: var(--green-soft); }
+</style>
+</head>
+<body data-page="9">
+<header id="site-header"></header>
+
+<main class="wrap">
+  <div class="hero">
+    <div class="eyebrow"><span class="pill">Тема 9</span><span>День 1, скрипт автоматизации · День 2, работа с данными</span></div>
+    <h1>Pandas и DataFrame</h1>
+    <p class="lead">Pandas это библиотека для таблиц. Главный объект в ней DataFrame: таблица с колонками, строками и индексом. Всё, что вы делаете в Excel руками (фильтры, замены, сводные), pandas делает командами, которые можно запустить заново на новых данных.</p>
+    <div class="metaphor">
+      <span class="m-label">Метафора</span>
+      <p>DataFrame это <b>лист Excel в памяти Python</b>. Колонки с заголовками, строки, слева номер строки (индекс). <code>groupby</code> это <b>сводная таблица</b>.</p>
+    </div>
+  </div>
+
+  <section class="block" id="pipe">
+    <div class="block-head">
+      <span class="tag">Интерактив</span>
+      <h2>Семь шагов: от грязного Excel до сводки</h2>
+      <p>Восемь строк из листа «Добыча» с той же грязью, что в учебном файле. Нажимайте шаги по порядку. Каждый шаг показывает код и что стало с таблицей.</p>
+    </div>
+    <div class="stepper" id="stepper"></div>
+    <div class="progress"><i id="prog" style="width:0"></i></div>
+    <div class="pipe">
+      <pre class="code" id="stepCode"></pre>
+      <div class="stack">
+        <p class="step-note" id="stepNote"></p>
+        <div class="excel-hint" id="excelHint"><span class="x">Excel</span><span></span></div>
+        <div class="btn-row">
+          <button class="btn" id="btnPrev">Назад</button>
+          <button class="btn primary" id="btnNext">Следующий шаг</button>
+        </div>
+      </div>
+      <div class="res-area" id="resArea"></div>
+    </div>
+  </section>
+
+  <section class="block" id="excel">
+    <div class="block-head">
+      <span class="tag">Параллель с Excel</span>
+      <h2>Что вы делаете в Excel и как это пишется в pandas</h2>
+    </div>
+    <div class="table-wrap">
+      <table class="t xl-map">
+        <thead><tr><th>В Excel</th><th>В pandas</th><th>Комментарий</th></tr></thead>
+        <tbody>
+          <tr><td>Фильтр по колонке</td><td><code>df[df["Объект"] == "ЗВП"]</code></td><td>Условие в квадратных скобках оставляет только подходящие строки</td></tr>
+          <tr><td>Сортировка по убыванию</td><td><code>df.sort_values("Нефть_т", ascending=False)</code></td><td>Исходная таблица не меняется, результат новый</td></tr>
+          <tr><td>Сводная таблица</td><td><code>df.groupby("Объект")["Нефть_т"].sum()</code></td><td>Или <code>pd.pivot_table(df, index="Объект", columns="Месяц", values="Нефть_т", aggfunc="sum")</code></td></tr>
+          <tr><td>ВПР (VLOOKUP)</td><td><code>df.merge(wells, on="Скважина", how="left")</code></td><td>Подтягивает колонки из справочника по общему ключу</td></tr>
+          <tr><td>Удалить дубликаты</td><td><code>df.drop_duplicates()</code></td><td>Сравнивает строку целиком</td></tr>
+          <tr><td>Найти и заменить</td><td><code>df["Нефть_т"].str.replace(",", ".")</code></td><td>Работает только с текстом</td></tr>
+          <tr><td>СУММ, СЧЁТ, СРЗНАЧ</td><td><code>.sum()</code>, <code>.count()</code>, <code>.mean()</code></td><td>Пустые ячейки (NaN) пропускаются</td></tr>
+          <tr><td>Посчитать пустые</td><td><code>df.isna().sum()</code></td><td>Количество пропусков в каждой колонке</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel stack">
+        <div class="panel-title" style="margin:0">Фильтр на очищенной таблице</div>
+        <div class="filter-row" id="filterRow"></div>
+        <pre class="code" id="filterCode"></pre>
+        <div class="table-wrap"><table class="df" id="filterTable"></table></div>
+      </div>
+      <div class="panel stack">
+        <div class="panel-title" style="margin:0">ВПР в pandas: merge со справочником</div>
+        <div class="btn-row"><button class="btn primary" id="btnMerge">df.merge(wells, on="Скважина", how="left")</button><button class="btn" id="btnMergeReset">Сбросить</button></div>
+        <div id="mergeArea"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <span class="tag">Как это выглядит в коде</span>
+      <h2>Весь пайплайн в одном месте</h2>
+    </div>
+    <div class="grid-2">
+<pre data-hl>from pathlib import Path
+import pandas as pd
+
+path = Path("data") / "добыча_2026.xlsx"
+df = pd.read_excel(path, sheet_name="Добыча")
+df.info()                              # типы и пропуски
+
+df["Объект"] = df["Объект"].str.strip().str.upper()
+oil_text = df["Нефть_т"].astype(str)
+oil_text = oil_text.str.replace(" ", "").str.replace(",", ".")
+df["Нефть_т"] = pd.to_numeric(oil_text, errors="coerce")
+df = df.drop_duplicates()
+
+cols = ["Нефть_т", "Простой_ч"]
+summary = df.groupby("Объект")[cols].sum()
+summary.to_excel(Path("результаты") / "сводка.xlsx")</pre>
+      <div class="stack">
+        <p><b>df это объект класса DataFrame.</b> Класс это чертёж, объект это вещь по чертежу. <code>type(df)</code> ответит <code>&lt;class 'pandas.DataFrame'&gt;</code>. Поэтому у df есть свои команды через точку: <code>df.info()</code>, <code>df.head()</code>, <code>df.groupby()</code>.</p>
+        <p><b>Колонка это Series.</b> <code>df["Нефть_т"]</code> возвращает одну колонку. Её команды для текста живут в <code>.str</code>, для дат в <code>.dt</code>.</p>
+        <p><b>Типы в pandas 3.</b> Текст показывается как <code>str</code>, смесь чисел и текста как <code>object</code>. Если колонка с числами стала <code>object</code>, в ней есть текст.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block mistake">
+    <div class="block-head">
+      <span class="tag">Типичная ошибка</span>
+      <h2>.str.replace на колонке, где числа вперемешку с текстом</h2>
+    </div>
+    <div class="pair">
+      <div><div class="bad-label">Настоящие числа пропадают</div>
+<pre data-hl>df["Нефть_т"].str.replace(",", ".")
+# 531.4    → NaN
+# "1 234,5" → "1 234.5"
+# 548.2    → NaN   (числа стали пустыми!)</pre></div>
+      <div><div class="good-label">Правильно</div>
+<pre data-hl>oil_text = df["Нефть_т"].astype(str)   # всё в текст
+oil_text = oil_text.str.replace(" ", "")
+oil_text = oil_text.str.replace(",", ".")
+df["Нефть_т"] = pd.to_numeric(oil_text, errors="coerce")</pre></div>
+    </div>
+    <p><code>.str</code> работает только с текстом. Ячейки, где уже лежит число, он превращает в NaN без всякой ошибки. Проверяйте результат: количество пропусков до и после очистки через <code>df["Нефть_т"].isna().sum()</code>. Если оно выросло, что-то потерялось.</p>
+  </section>
+
+  <section class="block ask">
+    <div class="block-head">
+      <span class="tag">Спроси ИИ</span>
+      <h2>Промпт для очистки листа «Добыча»</h2>
+    </div>
+<pre class="prompt-box" id="prompt9">Задача: очистить данные о добыче и посчитать сумму нефти по объектам.
+Данные: файл data/добыча_2026.xlsx, лист Добыча, колонки: Дата (2026-01-01 или текст "05.03.2026"), Объект ("КТЛ-1", " ЗВП ", "зсг"), Скважина ("T-101"), Нефть_т (531.4 или текст "1 234,5", есть пропуски), Простой_ч (0, 6). Данные условные.
+Результат: таблица Объект, Нефть_т, Простой_ч и файл результаты/сводка.xlsx.
+Правила: Объект через strip и upper; Нефть_т убрать пробелы, запятую заменить на точку, pd.to_numeric(errors="coerce"); удалить полные дубликаты; пропуски не заполнять нулями.
+Ограничения: Python 3.14, pandas, openpyxl, пути относительные через pathlib, комментарии на русском, без лишних библиотек.
+Выведи до и после очистки: число строк, число пропусков в Нефть_т, список объектов.
+Объясни код по шагам, как новичку.</pre>
+    <div class="btn-row"><button class="btn primary" data-copy="#prompt9">Скопировать промпт</button></div>
+  </section>
+</main>
+
+<nav id="pager"></nav>
+<p class="foot-note">Данные условные, названия объектов вымышлены. Тренинг «Python-аналитика с ИИ», EY.</p>
+
+<script src="app.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var COLS = ["Дата", "Объект", "Скважина", "Нефть_т", "Простой_ч"];
+  var RAW = [
+    ["2026-01-01", "КТЛ-1", "T-101", 531.4, 0],
+    ["2026-01-01", " ЗВП ", "T-301", 675.4, 0],
+    ["2026-01-01", "ктл-2", "T-201", "1 234,5", 0],
+    ["2026-01-02", "КТЛ-1", "T-101", 548.2, 0],
+    ["2026-01-02", "ЗСГ", "T-401", null, 6],
+    ["2026-01-02", "ЗВП", "T-301", 690.1, 0],
+    ["2026-01-02", "ЗВП", "T-301", 690.1, 0],
+    ["2026-01-02", "зсг", "T-402", "402,7", 2]
+  ];
+  function fmtNum(v) { return Number.isInteger(v) ? v.toFixed(1) : String(v); }
+  function clone(rows) { return rows.map(function (r) { return { i: r.i, v: r.v.slice() }; }); }
+  function stateAt(step) {
+    var rows = RAW.map(function (v, i) { return { i: i, v: v.slice() }; });
+    var changed = {}, removing = [], dtypes = { "Дата": "str", "Объект": "str", "Скважина": "str", "Нефть_т": "object", "Простой_ч": "int64" };
+    if (step >= 3) rows.forEach(function (r) { var o = r.v[1], n = o.trim().toUpperCase(); if (o !== n) { r.v[1] = n; if (step === 3) changed[r.i + ":1"] = 1; } });
+    if (step >= 4) { dtypes["Нефть_т"] = "float64"; rows.forEach(function (r) { if (typeof r.v[3] === "string") { r.v[3] = parseFloat(r.v[3].replace(/ /g, "").replace(",", ".")); if (step === 4) changed[r.i + ":3"] = 1; } }); }
+    if (step === 5) removing = [6];
+    if (step >= 6) rows = rows.filter(function (r) { return r.i !== 6; });
+    if (step === 5) rows = rows; // показываем, что удаляется
+    return { rows: rows, changed: changed, removing: removing, dtypes: dtypes };
+  }
+  function cellHtml(r, c, st, step) {
+    var v = r.v[c], cls = [], txt;
+    if (v === null) { txt = "NaN"; cls.push("nan"); if (step <= 2) cls.push("dirty-nan"); }
+    else if (typeof v === "number") { txt = c === 3 ? fmtNum(v) : String(v); cls.push("num"); }
+    else {
+      txt = EY.esc(v).replace(/^ | $/g, '<span class="sp">␣</span>');
+      if (c === 3) { txt = '"' + txt + '"'; if (step <= 3) cls.push("dirty-text"); }
+      if (c === 1 && step <= 2 && (v !== v.trim() || v !== v.toUpperCase())) cls.push("dirty-space");
+    }
+    if (st.changed[r.i + ":" + c]) cls.push("changed");
+    return '<td class="' + cls.join(" ") + '">' + txt + "</td>";
+  }
+  function tableHtml(st, step) {
+    var h = '<thead><tr><th class="idx"></th>' + COLS.map(function (c) { return "<th>" + c + "</th>"; }).join("") + "</tr>";
+    h += '<tr><th class="idx dt"></th>' + COLS.map(function (c) { return '<th class="dt">' + st.dtypes[c] + "</th>"; }).join("") + "</tr></thead><tbody>";
+    h += st.rows.map(function (r) {
+      var trc = (step <= 4 && (r.i === 5 || r.i === 6)) ? "dup" : "";
+      if (st.removing.indexOf(r.i) >= 0) trc = "removing";
+      return '<tr class="' + trc + '"><td class="idx">' + r.i + "</td>" + COLS.map(function (_, c) { return cellHtml(r, c, st, step); }).join("") + "</tr>";
+    }).join("");
+    return h + "</tbody>";
+  }
+  function dfBlock(st, step, caption) {
+    return '<div class="enter"><div class="code-head"><span>' + caption + '</span><span>' + st.rows.length + " строк</span></div>" +
+      '<div class="table-wrap"><table class="df">' + tableHtml(st, step) + "</table></div></div>";
+  }
+  var INFO_RAW = "<class 'pandas.DataFrame'>\nRangeIndex: 8 entries, 0 to 7\nData columns (total 5 columns):\n #   Column     Non-Null Count  Dtype \n---  ------     --------------  ----- \n 0   Дата       8 non-null      str   \n 1   Объект     8 non-null      str   \n 2   Скважина   8 non-null      str   \n@@ 3   Нефть_т    7 non-null      object@@\n 4   Простой_ч  8 non-null      int64 \ndtypes: int64(1), object(1), str(3)\nmemory usage: 452.0+ bytes";
+
+  var STEPS = [
+    { t: "read_excel", code: 'import pandas as pd\n\npath = "data/добыча_2026.xlsx"\ndf = pd.read_excel(path, sheet_name="Добыча")\ndf.head(8)   # первые 8 строк',
+      note: "Файл прочитан в память. Сразу видна грязь: пробелы вокруг названий, строчные буквы, числа текстом с запятой, пропуск, повтор строки.",
+      xl: "Открыть файл и пролистать лист глазами", res: function () { var st = stateAt(1); return '<div class="legend"><span class="l1">число записано текстом</span><span class="l2">пробелы или регистр</span><span class="l3">пропуск NaN</span><span class="l4">дубликат</span></div>' + dfBlock(st, 1, "df, как прочитали"); } },
+    { t: "info()", code: "df.info()",
+      note: "info() показывает тип каждой колонки и сколько непустых значений. Нефть_т получила тип object: в колонке смесь чисел и текста. С такой колонкой считать нельзя. Непустых 7 из 8: один пропуск.",
+      xl: "Формат ячеек и зелёные треугольники «число сохранено как текст»",
+      res: function () { return '<div class="enter"><div class="code-head"><span>вывод df.info()</span></div><div class="info-out">' + EY.esc(INFO_RAW).replace(/@@(.*?)@@/, '<span class="bad">$1</span>') + "</div></div>"; } },
+    { t: "strip/upper", code: 'print(df["Объект"].nunique())   # 6 разных «объектов»\n\ndf["Объект"] = df["Объект"].str.strip().str.upper()\n\nprint(df["Объект"].nunique())   # 4',
+      note: "strip() убирает пробелы по краям, upper() делает все буквы заглавными. Было 6 разных названий, стало 4 настоящих объекта. Изменённые ячейки подсвечены.",
+      xl: "Функции СЖПРОБЕЛЫ и ПРОПИСН в соседней колонке", res: function () { return dfBlock(stateAt(3), 3, "после очистки колонки Объект"); } },
+    { t: "to_numeric", code: 'oil_text = df["Нефть_т"].astype(str)\noil_text = oil_text.str.replace(" ", "")\noil_text = oil_text.str.replace(",", ".")\ndf["Нефть_т"] = pd.to_numeric(oil_text, errors="coerce")\n\nprint(df["Нефть_т"].dtype)   # float64',
+      note: "Все значения переводим в текст, убираем пробелы, запятую меняем на точку и превращаем в числа. errors=\"coerce\" значит: если число не получилось, поставить NaN, а не падать. Тип колонки стал float64.",
+      xl: "Найти и заменить «,» на «.», затем «Текст по столбцам»", res: function () { return dfBlock(stateAt(4), 4, "Нефть_т теперь числа"); } },
+    { t: "drop_duplicates", code: "print(df.duplicated().sum())   # 1 повтор\n\ndf = df.drop_duplicates()\n\nprint(len(df))   # 7",
+      note: "Строки 5 и 6 совпадают целиком: одна запись попала в файл дважды. drop_duplicates() оставляет первую. Обратите внимание на индекс: после удаления номера идут 0…5, 7. Номер строки в pandas это ярлык, а не порядковый номер.",
+      xl: "Данные, Удалить дубликаты", res: function () { return dfBlock(stateAt(5), 5, "строка 6 уходит") + '<div class="note enter">После шага в таблице 7 строк. Строка с индексом 6 удалена.</div>'; } },
+    { t: 'groupby("Объект")', code: 'cols = ["Нефть_т", "Простой_ч"]\nsummary = df.groupby("Объект")[cols].sum()\nsummary',
+      note: "groupby собирает строки с одинаковым объектом в группы и складывает внутри группы. Пропуск NaN при сумме пропускается. Объекты стали индексом таблицы.",
+      xl: "Вставка, Сводная таблица: Объект в строки, Нефть_т и Простой_ч в значения",
+      res: function () {
+        var st = stateAt(6), g = {};
+        st.rows.forEach(function (r) { var k = r.v[1]; g[k] = g[k] || [0, 0]; if (r.v[3] !== null) g[k][0] += r.v[3]; g[k][1] += r.v[4]; });
+        var keys = Object.keys(g).sort();
+        var t = '<thead><tr><th class="idx" style="width:auto">Объект</th><th>Нефть_т</th><th>Простой_ч</th></tr></thead><tbody>' +
+          keys.map(function (k) { return '<tr><td class="idx" style="text-align:left;color:var(--ink);font-weight:700">' + k + '</td><td class="num">' + fmtNum(Math.round(g[k][0] * 10) / 10) + '</td><td class="num">' + g[k][1] + "</td></tr>"; }).join("") + "</tbody>";
+        return '<div class="enter"><div class="code-head"><span>summary</span><span>' + keys.length + ' строки</span></div><div class="table-wrap"><table class="df">' + t + "</table></div></div>" +
+          '<div class="wrong err-box enter"><b>А если бы groupby сделали сразу после чтения?</b><span>Получили бы 6 групп вместо 4: « ЗВП », «ЗВП», «ЗСГ», «КТЛ-1», «зсг», «ктл-2». Плюс ошибку при сумме, потому что в Нефть_т текст. Поэтому сначала очистка, потом расчёт.</span></div>';
+      } },
+    { t: "to_excel", code: 'from pathlib import Path\n\nout = Path("результаты")\nout.mkdir(exist_ok=True)\nsummary.to_excel(out / "сводка.xlsx", sheet_name="По_объектам")',
+      note: "Таблица записана на диск. Её можно открыть в Excel и отправить. Обновили исходный файл, запустили скрипт заново, получили свежую сводку без ручной работы.",
+      xl: "Файл, Сохранить как", res: function () {
+        return '<div class="sheet enter"><div class="sheet-bar"><span>сводка.xlsx</span><span>Excel</span></div><table class="xl"><tr><th></th><th>A</th><th>B</th><th>C</th></tr>' +
+          '<tr><td class="rn">1</td><td class="h">Объект</td><td class="h">Нефть_т</td><td class="h">Простой_ч</td></tr>' +
+          '<tr><td class="rn">2</td><td>ЗВП</td><td class="n">1365,5</td><td class="n">0</td></tr>' +
+          '<tr><td class="rn">3</td><td>ЗСГ</td><td class="n">402,7</td><td class="n">8</td></tr>' +
+          '<tr><td class="rn">4</td><td>КТЛ-1</td><td class="n">1079,6</td><td class="n">0</td></tr>' +
+          '<tr><td class="rn">5</td><td>КТЛ-2</td><td class="n">1234,5</td><td class="n">0</td></tr></table><div class="sheet-tabs"><span>По_объектам</span></div></div>' +
+          '<p class="small muted enter">Excel с русскими настройками покажет запятую. В самом файле хранится число, а не текст.</p>';
+      } }
+  ];
+  var cur = 0, maxDone = 0;
+  $("stepper").innerHTML = STEPS.map(function (s, i) { return '<button data-s="' + i + '"><span class="sn">Шаг ' + (i + 1) + '</span><span class="st">' + EY.esc(s.t) + "</span></button>"; }).join("");
+  function go(i) {
+    cur = Math.max(0, Math.min(STEPS.length - 1, i));
+    maxDone = Math.max(maxDone, cur);
+    var s = STEPS[cur];
+    document.querySelectorAll("#stepper button").forEach(function (b, k) { b.classList.toggle("is-on", k === cur); b.classList.toggle("done", k < cur); });
+    $("prog").style.width = ((cur + 1) / STEPS.length * 100) + "%";
+    EY.renderCode($("stepCode"), s.code);
+    $("stepNote").textContent = s.note;
+    $("excelHint").lastElementChild.textContent = s.xl;
+    $("resArea").innerHTML = s.res();
+    $("btnPrev").disabled = cur === 0;
+    $("btnNext").disabled = cur === STEPS.length - 1;
+    $("btnNext").textContent = cur === STEPS.length - 1 ? "Готово" : "Следующий шаг: " + STEPS[cur + 1].t;
+  }
+  document.querySelectorAll("#stepper button").forEach(function (b) { b.addEventListener("click", function () { go(+b.getAttribute("data-s")); }); });
+  $("btnPrev").addEventListener("click", function () { go(cur - 1); });
+  $("btnNext").addEventListener("click", function () { go(cur + 1); });
+  go(0);
+
+  /* фильтр */
+  var clean = stateAt(6);
+  var OBJS = ["Все", "КТЛ-1", "КТЛ-2", "ЗВП", "ЗСГ"];
+  $("filterRow").innerHTML = OBJS.map(function (o, i) { return '<button class="chip-btn' + (i === 0 ? " is-on" : "") + '" data-f="' + o + '">' + o + "</button>"; }).join("");
+  function filt(o) {
+    document.querySelectorAll("[data-f]").forEach(function (b) { b.classList.toggle("is-on", b.getAttribute("data-f") === o); });
+    var rows = clean.rows.filter(function (r) { return o === "Все" || r.v[1] === o; });
+    EY.renderCode($("filterCode"), o === "Все" ? "df   # все строки" : 'df[df["Объект"] == "' + o + '"]');
+    $("filterTable").innerHTML = tableHtml({ rows: rows, changed: {}, removing: [], dtypes: clean.dtypes }, 7);
+  }
+  document.querySelectorAll("[data-f]").forEach(function (b) { b.addEventListener("click", function () { filt(b.getAttribute("data-f")); }); });
+  filt("Все");
+
+  /* merge */
+  var PROD = [["T-101", 531.4], ["T-301", 675.4], ["T-201", 1234.5], ["T-402", 402.7]];
+  var WELLS = [["T-101", "добывающая"], ["T-201", "добывающая"], ["T-301", "добывающая"], ["T-203", "нагнетательная"]];
+  function mergeView(done) {
+    var left = '<div><div class="code-head"><span>df</span></div><div class="table-wrap"><table class="df"><thead><tr><th>Скважина</th><th>Нефть_т</th></tr></thead><tbody>' +
+      PROD.map(function (r) { return '<tr><td class="key">' + r[0] + '</td><td class="num">' + fmtNum(r[1]) + "</td></tr>"; }).join("") + "</tbody></table></div></div>";
+    var right = '<div><div class="code-head"><span>wells</span></div><div class="table-wrap"><table class="df"><thead><tr><th>Скважина</th><th>Тип</th></tr></thead><tbody>' +
+      WELLS.map(function (r) { return '<tr><td class="key">' + r[0] + "</td><td>" + r[1] + "</td></tr>"; }).join("") + "</tbody></table></div></div>";
+    if (!done) return '<div class="grid-2" style="gap:14px">' + left + right + '</div><p class="small muted">Общая колонка Скважина это ключ, как первый аргумент ВПР.</p>';
+    var res = '<div class="enter"><div class="code-head"><span>результат merge</span><span>how="left": все строки df остаются</span></div><div class="table-wrap"><table class="df"><thead><tr><th>Скважина</th><th>Нефть_т</th><th>Тип</th></tr></thead><tbody>' +
+      PROD.map(function (r) { var w = WELLS.filter(function (x) { return x[0] === r[0]; })[0]; return '<tr><td class="key">' + r[0] + '</td><td class="num">' + fmtNum(r[1]) + '</td><td class="' + (w ? "joined" : "nan") + '">' + (w ? w[1] : "NaN") + "</td></tr>"; }).join("") + "</tbody></table></div></div>";
+    return res + '<p class="small">T-402 нет в справочнике, поэтому Тип = NaN. В Excel ВПР показал бы #Н/Д. Скважина T-203 есть только в справочнике и в результат не попала.</p>';
+  }
+  $("mergeArea").innerHTML = mergeView(false);
+  $("btnMerge").addEventListener("click", function () { $("mergeArea").innerHTML = mergeView(true); });
+  $("btnMergeReset").addEventListener("click", function () { $("mergeArea").innerHTML = mergeView(false); });
+})();
+</script>
+</body>
+</html>
