@@ -36,6 +36,8 @@
   var nav = root.querySelector(".eyp-nav");
   var f = document.createElement("iframe");
   f.title = "Python-аналитика с ИИ";
+  f.allowFullscreen = true;
+  f.setAttribute("allow", "fullscreen");
   f.src = BASE + encodeURI(FIRST);
   root.appendChild(f);
 

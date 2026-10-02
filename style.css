@@ -360,3 +360,12 @@ table.t td code { white-space: nowrap; }
   main table.t { min-width: 640px; }
   main table.t code { white-space: nowrap !important; overflow-wrap: normal; }
 }
+
+/* ---------- анимации ---------- */
+.anim { display: grid; gap: 16px; }
+.anim.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.anim.two .block-head { grid-column: 1 / -1; }
+@media (max-width: 760px) { .anim.two { grid-template-columns: minmax(0, 1fr); } }
+.anim figure { margin: 0; max-width: 960px; }
+.anim video { display: block; width: 100%; aspect-ratio: 16 / 9; background: #fff; border: 1px solid var(--line); border-radius: var(--r); }
+.anim figcaption { margin-top: 8px; font-family: var(--f-mono); font-size: 0.78rem; color: var(--muted); }
