@@ -93,6 +93,7 @@ kbd {
   white-space: nowrap;
 }
 @media (max-width: 520px) { .brand { display: none; } }
+.embedded .site-header { display: none; }
 .nav {
   display: flex; gap: 6px; margin-left: auto; align-items: center; overflow-x: auto;
   scrollbar-width: none; padding-block: 10px;
@@ -145,7 +146,7 @@ p { margin: 0; max-width: 70ch; }
 }
 .metaphor p { font-size: 1.12rem; }
 
-section.block { margin-top: 56px; display: grid; gap: 20px; }
+section.block { margin-top: 56px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; }
 .block-head { display: grid; gap: 8px; }
 .tag {
   font-family: var(--f-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em;
@@ -161,7 +162,7 @@ section.block { margin-top: 56px; display: grid; gap: 20px; }
 .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
 .split { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 24px; align-items: start; }
 @media (max-width: 900px) {
-  .grid-2, .grid-3, .grid-4, .split { grid-template-columns: 1fr; }
+  .grid-2, .grid-3, .grid-4, .split { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* ---------- кнопки и формы ---------- */
@@ -259,8 +260,8 @@ input[type="checkbox"] { accent-color: var(--ink); width: 22px; height: 22px; }
 .err-box { background: var(--red-soft); border-radius: 8px; padding: 14px 18px; }
 .err-box .err-line { font-family: var(--f-mono); color: var(--red); font-weight: 600; font-size: 0.92rem; }
 
-.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-@media (max-width: 800px) { .pair { grid-template-columns: 1fr; } }
+.pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+@media (max-width: 800px) { .pair { grid-template-columns: minmax(0, 1fr); } }
 .pair .bad-label, .pair .good-label { font-family: var(--f-mono); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
 .bad-label { color: var(--red); }
 .good-label { color: var(--green); }
@@ -345,4 +346,17 @@ table.t td code { white-space: nowrap; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.001s !important; transition-duration: 0.001s !important; }
+}
+
+/* ---------- телефон ---------- */
+/* Сайт рассчитан на 1280 px и шире. На узком экране колонки и строки текста сжимаются до ширины экрана,
+   длинный код прокручивается внутри своего блока. */
+@media (max-width: 700px) {
+  main *, .pager *, .cta * { min-width: 0; }
+  main code, main b, main h1, main h2, main h3, main p { overflow-wrap: anywhere; }
+  main code { white-space: normal !important; }
+  main { overflow-x: clip; }
+  /* Таблицы не сжимаем: они прокручиваются вбок внутри своей рамки. */
+  main table.t { min-width: 640px; }
+  main table.t code { white-space: nowrap !important; overflow-wrap: normal; }
 }

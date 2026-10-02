@@ -14,7 +14,7 @@
   .types-table td:nth-child(1) { font-family: var(--f-mono); font-weight: 600; font-size: 1rem; white-space: nowrap; }
   .types-table td:nth-child(3) code { font-size: 0.85rem; }
   .lab { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: stretch; }
-  @media (max-width: 900px) { .lab { grid-template-columns: 1fr; } }
+  @media (max-width: 900px) { .lab { grid-template-columns: minmax(0, 1fr); } }
   .builder { display: grid; grid-template-columns: 1fr 110px 1fr; gap: 12px; align-items: end; }
   .builder select { font-family: var(--f-mono); font-size: 1rem; padding: 12px; }
   .repl { background: var(--code-bg); color: var(--code-fg); border-radius: var(--r); padding: 22px 24px; font-family: var(--f-mono); font-size: 1.15rem; line-height: 1.7; min-height: 170px; white-space: pre-wrap; }
@@ -30,12 +30,12 @@
   .verdict .v-title { font-weight: 700; font-size: 1.05rem; }
   .type-chip { display: inline-block; font-family: var(--f-mono); font-size: 0.85rem; font-weight: 600; padding: 2px 10px; border-radius: 20px; background: var(--surface); border: 1.5px solid currentColor; }
   .quick { display: flex; flex-wrap: wrap; gap: 8px; }
-  .conv-row { display: grid; grid-template-columns: 1fr; gap: 4px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line-2); }
+  .conv-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line-2); }
   .conv-row:last-child { border-bottom: 0; }
   .conv-row .expr { font-family: var(--f-mono); font-size: 0.92rem; }
   .conv-row .val { font-family: var(--f-mono); font-weight: 600; }
   .conv-row .val.err { color: var(--red); font-weight: 500; font-size: 0.88rem; }
-  @media (max-width: 900px) { .conv-row { grid-template-columns: 1fr; } }
+  @media (max-width: 900px) { .conv-row { grid-template-columns: minmax(0, 1fr); } }
   .guess { display: flex; align-items: center; gap: 10px; font-size: 0.92rem; }
 </style>
 </head>
@@ -59,7 +59,7 @@
     </div>
     <div class="table-wrap">
       <table class="t types-table">
-        <thead><tr><th>Тип</th><th>Что в коробке</th><th>Пример из кейса ТШО</th><th>Как в Excel</th></tr></thead>
+        <thead><tr><th>Тип</th><th>Что в коробке</th><th>Пример из данных о добыче</th><th>Как в Excel</th></tr></thead>
         <tbody>
           <tr><td class="t-int">int</td><td>Целое число</td><td><code>shifts = 2</code>, <code>downtime_h = 6</code></td><td>Число без дробной части</td></tr>
           <tr><td class="t-float">float</td><td>Число с точкой</td><td><code>oil_t = 552.9</code>, <code>pressure = 78.5</code></td><td>Число с десятичными. В Python дробная часть через точку, не через запятую</td></tr>
@@ -121,7 +121,7 @@
           <button class="chip-btn" data-c=" 78 ">" 78 "</button>
           <button class="chip-btn" data-c="нефть">нефть</button>
         </div>
-        <div class="note">Правило тренинга: перед расчётом убираем пробелы и меняем запятую на точку. В pandas то же самое делает <code>pd.to_numeric(..., errors="coerce")</code> (страница 9).</div>
+        <div class="note">Правило: перед расчётом убираем пробелы и меняем запятую на точку. В pandas то же самое делает <code>pd.to_numeric(..., errors="coerce")</code> (страница 9).</div>
       </div>
       <div class="panel" id="convOut"></div>
     </div>

@@ -35,7 +35,7 @@
   .rule .ex .no { color: var(--red); text-decoration: line-through; text-decoration-color: rgba(200,55,45,0.5); }
   .rule .ex .yes { color: var(--green); }
   .news { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
-  @media (max-width: 1000px) { .news { grid-template-columns: 1fr; } }
+  @media (max-width: 1000px) { .news { grid-template-columns: minmax(0, 1fr); } }
   .new-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; display: grid; gap: 10px; align-content: start; }
   .ver { font-family: var(--f-mono); font-weight: 700; font-size: 0.75rem; background: var(--ink); color: var(--yellow); border-radius: 4px; padding: 2px 8px; justify-self: start; }
   .repl-demo { background: #1F1F27; color: #E6E6EE; border-radius: 8px; padding: 12px 16px; font-family: var(--f-mono); font-size: 0.8rem; line-height: 1.6; white-space: pre-wrap; overflow-x: auto; }
@@ -43,7 +43,7 @@
   .repl-demo .k { color: #FF9CAC; } .repl-demo .s { color: #A8E6B0; } .repl-demo .n { color: #FFB870; }
   .repl-demo .e { color: #FF8F84; font-weight: 700; } .repl-demo .h { color: #FFE600; } .repl-demo .m { color: #8E8EA2; }
   .fs { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
-  @media (max-width: 900px) { .fs { grid-template-columns: 1fr; } }
+  @media (max-width: 900px) { .fs { grid-template-columns: minmax(0, 1fr); } }
   .fs-out { font-family: var(--f-mono); font-size: 1.4rem; font-weight: 700; background: var(--yellow-wash); border: 2px solid var(--ink); border-radius: 8px; padding: 16px 20px; white-space: pre; overflow-x: auto; }
   .tools-table td:first-child { font-family: var(--f-mono); font-weight: 700; white-space: nowrap; }
   .tools-table td code.c { white-space: nowrap; }
@@ -103,7 +103,7 @@
     <div class="block-head">
       <span class="tag">Что нового</span>
       <h2>Python 3.13 и 3.14: что заметит новичок</h2>
-      <p>На тренинге используем 3.14 (вышла 7 октября 2025 года, сейчас 3.14.7), 3.13 тоже подходит. Всё из этого блока можно показать вживую.</p>
+      <p>Примеры на сайте рассчитаны на 3.14 (вышла 7 октября 2025 года, сейчас 3.14.7), 3.13 тоже подходит.</p>
     </div>
     <div class="news">
       <div class="new-card"><span class="ver">3.13</span><b>Новый интерактивный режим (REPL)</b>

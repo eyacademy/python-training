@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="style.css">
 <style>
   .sim { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 24px; align-items: start; }
-  @media (max-width: 900px) { .sim { grid-template-columns: 1fr; } }
+  @media (max-width: 900px) { .sim { grid-template-columns: minmax(0, 1fr); } }
   #editor { min-height: 290px; font-size: 1rem; line-height: 1.65; background: var(--code-bg); color: var(--code-fg); border-color: var(--code-bg); padding: 18px 22px; }
   #editor:focus { box-shadow: 0 0 0 3px var(--yellow); }
   #codeView { min-height: 290px; font-size: 1rem; }

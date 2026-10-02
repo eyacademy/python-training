@@ -33,7 +33,7 @@
   .road .car { fill: var(--ink); }
   .result-big { font-size: 1.25rem; font-weight: 700; padding: 14px 18px; border-radius: 8px; background: var(--yellow); display: inline-block; animation: pop 0.35s ease; }
   .loop-grid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 24px; align-items: start; }
-  @media (max-width: 900px) { .loop-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 900px) { .loop-grid { grid-template-columns: minmax(0, 1fr); } }
   .iter { font-family: var(--f-mono); font-size: 0.85rem; color: var(--muted); }
   .cell .slot { font-size: 1rem; }
   .cell .ptr { height: 26px; font-size: 1.2rem; line-height: 26px; color: var(--ink); visibility: hidden; }

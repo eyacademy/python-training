@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="style.css">
 <style>
   .stepper { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
-  @media (max-width: 1000px) { .stepper { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 1000px) { .stepper { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   .stepper button { font: inherit; cursor: pointer; text-align: left; padding: 10px 12px; border-radius: 8px; border: 2px solid var(--line); background: var(--surface); display: grid; gap: 2px; transition: border-color 0.2s ease, background 0.2s ease; }
   .stepper button:hover { border-color: var(--ink); }
   .stepper .sn { font-family: var(--f-mono); font-size: 0.72rem; color: var(--muted); font-weight: 600; }
@@ -23,7 +23,7 @@
   .progress i { display: block; height: 100%; background: var(--ink); transition: width 0.5s ease; }
   .pipe { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 20px 24px; align-items: start; }
   .pipe .res-area { grid-column: 1 / -1; }
-  @media (max-width: 1000px) { .pipe { grid-template-columns: 1fr; } }
+  @media (max-width: 1000px) { .pipe { grid-template-columns: minmax(0, 1fr); } }
   .step-note { font-size: 1rem; }
   .excel-hint { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; background: #E6F2EA; border-radius: 8px; padding: 12px 16px; font-size: 0.92rem; }
   .excel-hint .x { background: #217346; color: #fff; font-weight: 700; font-family: var(--f-mono); font-size: 0.8rem; border-radius: 4px; padding: 3px 8px; }
@@ -65,7 +65,7 @@
   .xl-map td:nth-child(2) code { white-space: normal; }
   .filter-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
   .merge { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr) minmax(0, 1.3fr); gap: 16px; align-items: start; }
-  @media (max-width: 1000px) { .merge { grid-template-columns: 1fr; } }
+  @media (max-width: 1000px) { .merge { grid-template-columns: minmax(0, 1fr); } }
   table.df td.key { background: #E8EEFB; }
   table.df td.joined { background: var(--green-soft); }
 </style>

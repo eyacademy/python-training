@@ -599,7 +599,19 @@
     }
   };
 
-  function init() { buildChrome(); autoHighlight(); bindCopy(); }
+  /* ---------- встраивание в страницу Tilda ---------- */
+  // Шапку с темами рисует сама страница Tilda (embed.js), окно сообщает ей номер темы и свою высоту.
+  function reportToParent() {
+    if (window.parent === window) return;
+    document.documentElement.classList.add("embedded");
+    var cur = parseInt(document.body.getAttribute("data-page") || "0", 10);
+    function post() { window.parent.postMessage({ eyPython: "page", page: cur, h: document.body.scrollHeight, pages: PAGES }, "*"); }
+    if (window.ResizeObserver) new ResizeObserver(post).observe(document.body);
+    window.addEventListener("load", post);
+    post();
+  }
+
+  function init() { buildChrome(); reportToParent(); autoHighlight(); bindCopy(); }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();
 })();

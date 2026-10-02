@@ -15,7 +15,7 @@
   .os-switch button { font: inherit; font-weight: 600; padding: 9px 18px; border: 0; background: var(--surface); cursor: pointer; }
   .os-switch button.is-on { background: var(--ink); color: var(--yellow); }
   .envs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
-  @media (max-width: 1000px) { .envs { grid-template-columns: 1fr; } }
+  @media (max-width: 1000px) { .envs { grid-template-columns: minmax(0, 1fr); } }
   .env { font: inherit; text-align: left; color: var(--ink); cursor: pointer; border: 2px solid var(--line); border-radius: 12px; background: var(--surface); padding: 0; overflow: hidden; display: grid; align-content: start; transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease; }
   .env:hover { border-color: var(--ink); }
   .env.is-on { border-color: var(--ink); box-shadow: 0 10px 24px rgba(46,46,56,0.14); transform: translateY(-3px); }
@@ -116,7 +116,7 @@
         <tbody>
           <tr><td>Что ставит</td><td>Только Python-пакеты в уже готовое окружение</td><td>Сам Python, Python-пакеты и системные библиотеки, которые им нужны</td><td>Сам Python и Python-пакеты, создаёт папку <code>.venv</code> и файл <code>uv.lock</code> с точными версиями</td></tr>
           <tr><td>Откуда</td><td>PyPI (pypi.org)</td><td>Каналы conda-forge (бесплатно) или defaults от Anaconda (для организаций от 200 человек нужна платная лицензия)</td><td>PyPI, как pip, но в 10-100 раз быстрее</td></tr>
-          <tr><td>Когда выбирать</td><td>Нужно доставить один пакет в окружение, которое уже есть</td><td>Корпоративный ноутбук, установка через Miniconda с каналом conda-forge (или Miniforge). Основной вариант на тренинге</td><td>Новый проект, где важны скорость и одинаковые версии у всех. <code>uv run otchet.py</code> сам поставит всё нужное</td></tr>
+          <tr><td>Когда выбирать</td><td>Нужно доставить один пакет в окружение, которое уже есть</td><td>Корпоративный ноутбук, установка через Miniconda с каналом conda-forge (или Miniforge). Рекомендуемый вариант</td><td>Новый проект, где важны скорость и одинаковые версии у всех. <code>uv run otchet.py</code> сам поставит всё нужное</td></tr>
         </tbody>
       </table>
     </div>
@@ -200,7 +200,7 @@ SyntaxError: invalid syntax</pre></div>
   var $ = function (id) { return document.getElementById(id); };
   var ENVS = {
     base: { py: "3.14", desc: "Создаётся при установке Miniconda. Сюда ничего не ставим.", pkgs: { pip: "25.2", conda: "25.7" } },
-    ey: { py: "3.14", desc: "Окружение тренинга. Всё для отчёта по добыче.", pkgs: { pandas: "3.0.6", numpy: "2.5.3", matplotlib: "3.11.2", openpyxl: "3.1.5", jupyter: "1.1.1" } },
+    ey: { py: "3.14", desc: "Рабочее окружение. Всё для отчёта по добыче.", pkgs: { pandas: "3.0.6", numpy: "2.5.3", matplotlib: "3.11.2", openpyxl: "3.1.5", jupyter: "1.1.1" } },
     old_report: { py: "3.11", desc: "Старый отчёт коллеги. Работает только с pandas 2.", pkgs: { pandas: "2.2.3", numpy: "1.26.4", requests: "2.32.3" } }
   };
   var AVAILABLE = { seaborn: "0.13.2", openpyxl: "3.1.5", pandas: "3.0.6", numpy: "2.5.3", matplotlib: "3.11.2", requests: "2.32.5", jupyter: "1.1.1", ruff: "0.16.8", "scikit-learn": "1.8.0", pyyaml: "6.0.3" };
@@ -336,7 +336,7 @@ SyntaxError: invalid syntax</pre></div>
     $("cmdConda").innerHTML =
       cmdRow("conda create -n ey python=3.14", "создать окружение ey с Python 3.14") +
       cmdRow("conda activate ey", "включить окружение, в начале строки появится (ey)") +
-      cmdRow("conda install -c conda-forge pandas openpyxl matplotlib jupyter", "поставить библиотеки тренинга из бесплатного канала") +
+      cmdRow("conda install -c conda-forge pandas openpyxl matplotlib jupyter", "поставить библиотеки для анализа данных из бесплатного канала") +
       cmdRow("conda env list", "список окружений, активное отмечено *") +
       cmdRow("conda deactivate", "выйти из окружения");
     $("cmdUv").innerHTML =

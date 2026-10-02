@@ -28,7 +28,7 @@
   .result-line .p { color: var(--yellow); }
   .result-line .err { color: #FF9A8F; }
   @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-  .slice-ctrl { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .slice-ctrl { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
   .slice-ctrl output { font-family: var(--f-mono); font-weight: 700; }
   .cards { display: flex; gap: 34px 14px; flex-wrap: wrap; padding: 26px 18px 18px; background: #E9E6DF; border-radius: 10px; border: 2px solid var(--ink); min-height: 170px; align-items: flex-end; }
   .card { width: 170px; background: var(--surface); border: 2px solid var(--ink); border-radius: 4px 4px 6px 6px; position: relative; transition: transform 0.35s cubic-bezier(.2,.8,.3,1.2), background 0.3s ease, box-shadow 0.3s ease; }
@@ -39,10 +39,10 @@
   .card.changed .val { animation: flash 0.9s ease; }
   .key-form { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: end; }
   .add-form { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: end; }
-  @media (max-width: 800px) { .add-form, .key-form, .slice-ctrl { grid-template-columns: 1fr; } }
+  @media (max-width: 800px) { .add-form, .key-form, .slice-ctrl { grid-template-columns: minmax(0, 1fr); } }
   .df-stage { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px 28px; align-items: start; }
   .df-stage .arrow-go { grid-column: 1 / -1; order: 3; grid-template-columns: auto auto; justify-content: start; align-items: center; gap: 16px; }
-  @media (max-width: 1000px) { .df-stage { grid-template-columns: 1fr; } }
+  @media (max-width: 1000px) { .df-stage { grid-template-columns: minmax(0, 1fr); } }
   .arrow-go { display: grid; justify-items: center; gap: 6px; font-family: var(--f-mono); font-size: 0.75rem; color: var(--muted); text-align: center; }
   .arrow-go svg { width: 64px; height: 28px; }
   table.df { border-collapse: collapse; font-family: var(--f-mono); font-size: 0.88rem; width: 100%; background: var(--surface); }

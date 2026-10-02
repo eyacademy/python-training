@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="style.css">
 <style>
   .cycle { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; position: relative; }
-  @media (max-width: 900px) { .cycle { grid-template-columns: 1fr 1fr; gap: 12px; } }
+  @media (max-width: 900px) { .cycle { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; } }
   .node { font: inherit; color: var(--ink); cursor: pointer; text-align: left; background: var(--surface); border: 2px solid var(--line); border-radius: 12px; padding: 18px 18px 16px; margin-right: 34px; position: relative; display: grid; gap: 6px; align-content: start; transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease; }
   .node:last-child { margin-right: 0; }
   .node:not(:last-child)::after { content: ""; position: absolute; right: -30px; top: 50%; width: 22px; height: 3px; background: var(--ink); }
@@ -26,10 +26,10 @@
   .loopback { display: flex; align-items: center; gap: 12px; margin-top: 10px; font-size: 0.85rem; color: var(--muted); }
   .loopback svg { flex: 1; height: 26px; }
   .node-detail { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; animation: rise 0.35s ease; }
-  @media (max-width: 900px) { .node-detail { grid-template-columns: 1fr; } }
+  @media (max-width: 900px) { .node-detail { grid-template-columns: minmax(0, 1fr); } }
   @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
   .builder { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
-  @media (max-width: 1000px) { .builder { grid-template-columns: 1fr; } }
+  @media (max-width: 1000px) { .builder { grid-template-columns: minmax(0, 1fr); } }
   .builder textarea { min-height: 64px; font-size: 0.9rem; overflow: hidden; resize: none; }
   #nodeDetail .code { align-self: start; }
   #nodeDetail .code .ln { white-space: pre-wrap; }
@@ -51,7 +51,7 @@
   .check-bar .bar i { display: block; height: 100%; background: var(--green); transition: width 0.4s ease; }
   .check-bar .cnt { font-family: var(--f-mono); font-weight: 700; }
   .never { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-  @media (max-width: 900px) { .never { grid-template-columns: 1fr; } }
+  @media (max-width: 900px) { .never { grid-template-columns: minmax(0, 1fr); } }
   .never div { background: var(--red-soft); border-radius: 10px; padding: 14px 16px; display: grid; gap: 4px; }
   .never b { color: var(--red); }
   table.df { border-collapse: collapse; font-family: var(--f-mono); font-size: 0.86rem; width: 100%; background: var(--surface); }
@@ -94,7 +94,7 @@
     <div class="block-head">
       <span class="tag">Интерактив</span>
       <h2>Конструктор промпта</h2>
-      <p>Выберите готовый пример или заполните поля своими словами. Справа сразу собирается промпт по шаблону тренинга. Индикатор снизу подскажет, чего не хватает.</p>
+      <p>Выберите готовый пример или заполните поля своими словами. Справа сразу собирается промпт по готовому шаблону. Индикатор снизу подскажет, чего не хватает.</p>
     </div>
     <div class="btn-row" id="presets"></div>
     <div class="builder">
